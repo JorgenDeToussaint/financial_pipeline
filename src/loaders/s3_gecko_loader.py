@@ -46,6 +46,16 @@ class s3_loader:
             logger.error(f"❌ Krytyczny błąd ładowania: {type(e).__name__}: {e}")
             return False
         
+    def upload_bytes(self, data: bytes, bucket: str, key: str):
+        """Nowa metoda dla Silvera (Parquet) [cite: 2026-01-24]"""
+        try:
+            self.s3.put_object(Bucket=bucket, Key=key, Body=data)
+            logger.info(f"✅ Silver: s3://{bucket}/{key}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Silver Error: {e}")
+            return False
+        
     def download_object(self, bucket: str, key: str):
         try:
             logger.info(f' Pobieram obiekt: s3://{bucket}/{key}')
