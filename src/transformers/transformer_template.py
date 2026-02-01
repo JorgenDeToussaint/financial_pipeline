@@ -6,13 +6,13 @@ logger = get_logger(__name__)
 
 # Predefying to keep stable use of RAM
 GECKO_SCHEMA = {
-    "id": pl.String,
-    "symbol": pl.String,
-    "name": pl.String,
-    "current_price": pl.Float64,
-    "market_cap": pl.Float64,
-    "total_volume": pl.Float64,
-    "last_updated": pl.String  # will change to datetime in lazy
+    "id": pl.Utf8,         
+    "symbol": pl.Utf8,
+    "name": pl.Utf8,
+    "current_price": pl.Decimal(precision=20, scale=8), 
+    "market_cap": pl.Decimal(precision=20, scale=2),
+    "total_volume": pl.Decimal(precision=20, scale=2),
+    "last_updated": pl.Utf8
 }
 
 def transform_to_silver(raw_json_bytes: bytes):
