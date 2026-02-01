@@ -2,14 +2,18 @@ services:
   app:
     build: 
       context: .
-      dockerfile: docker/Dockerfile # upewnij się, że ścieżka pasuje
+      dockerfile: docker/Dockerfile
     volumes:
-      - ./src:/app/src           # Mapowanie kodu (Hot Reloading)
-      - ./data:/app/data         # Persystencja danych finansowych
-      - ./logs:/app/logs         # Logi dostępne na hostingu
-      - ./config:/app/config     # Konfiguracja instrumentów
+      - .:/app:z                   
+      - ./data:/app/data:z
+      - ./logs:/app/logs:z
+      - ./config:/app/config:z
     env_file:
       - .env                     
+    working_dir: /app
+    command: python src/main.py
+    environment:
+      - PYTHONPATH=/app
     stdin_open: true 
     tty: true
 
@@ -17,23 +21,26 @@ services:
     image: minio/minio
     container_name: minio_storage
     ports:
-      - "9000:9000" #API s3
-      - "9001:9001" #Console
+      - "9000:9000"
+      - "9001:9001"
+    env_file:
+      - .env                     
     environment:
-      - MINIO_ROOT_USER = ${MINIO_USER}
-      - MINIO_ROOT_PASSWORD = ${MINIO_PASSWORD}
+      - MINIO_ROOT_USER=${MINIO_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}
     volumes:
       - minio_data:/data
-    command: server /data --console-adress ":9001"
+    command: server /data --console-address ":9001"
 
-    createbuckets:
-      image: minio/mc
-      depends_on:
-        - minio
-    
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    env_file:
+      - .env                    
     entrypoint: >
       /bin/sh -c "
-      until (/usr/bin/mc alias set local_minio http://minio:9000 admin password) do echo 'Waiting for MinIO...' && sleep 1; done;
+      until (/usr/bin/mc alias set local_minio http://minio:9000 $MINIO_USER $MINIO_PASSWORD) do echo 'Waiting for MinIO...' && sleep 1; done;
       /usr/bin/mc mb --ignore-existing local_minio/bronze;
       exit 0;
       "
