@@ -6,13 +6,13 @@ logger = get_logger(__name__)
 
 # Predefying to keep stable use of RAM
 GECKO_SCHEMA = {
-    "id": pl.Utf8,         
-    "symbol": pl.Utf8,
-    "name": pl.Utf8,
+    "id": pl.String,         
+    "symbol": pl.String,
+    "name": pl.String,
     "current_price": pl.Decimal(precision=20, scale=8), 
     "market_cap": pl.Decimal(precision=20, scale=2),
     "total_volume": pl.Decimal(precision=20, scale=2),
-    "last_updated": pl.Utf8
+    "last_updated": pl.String
 }
 
 def transform_to_silver(raw_json_bytes: bytes):
@@ -31,7 +31,7 @@ def transform_to_silver(raw_json_bytes: bytes):
             df_eager.lazy()
             .select(columns_to_keep)
             .with_columns(
-                pl.col("last_updated").str.to_datetime()
+                pl.col("last_updated").str.to_datetime(time_zone="UTC")
             )
             .collect()
         )
