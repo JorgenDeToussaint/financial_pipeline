@@ -11,12 +11,15 @@ For now it's running on single T480 thinkpad, future development includes cluste
  - [x] Folder structure for future updates
  - [x] Docker image for stable enviorment
  - [x] Extractor for stablecoins(top 100 on public api v3)
+ - [x] MiniO3 container loading
 
 ## To do next:
- - [ ] Mini03 on container
  - [ ] Tranform via polars to parquet(transformer)
  - [ ] Load to duckdb(loader)
+ - [ ] logging on all scripts
+ - [ ] full class templates for next pipes
+ - [ ] basic orchiestration in main.py
 
-### Why polars and duckdb instead of pandas and duckdb?
+### Why polars and duckdb instead of pandas and postgres?
 Storage is cheap, RAM is expensive right now.
 Prefer to make these thinkpads as effective as they can.
