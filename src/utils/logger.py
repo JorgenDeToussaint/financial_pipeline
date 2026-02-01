@@ -12,23 +12,31 @@ def get_logger(name: str):
     if logger.hasHandlers():
         return logger
     
+
+    logger.setLevel(logging.DEBUG)
+
     formatter = logging.Formatter(
-        "%(asctime)s" | "%(levelname)-8s"| "%(name)s" | "%(message)s" ,
+        "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
     )
 
+    
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(formatter)
 
+ 
     file_handler = RotatingFileHandler(
         log_dir / "pipeline.log",
         maxBytes=5*1024*1024,
         backupCount=3,
         encoding='utf-8'
     )
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
 
-    file_handler.addHandler(logging.DEBUG)
-    file_handler.addHandler(console_handler)
+  
+    logger.addHandler(console_handler)
+    logger.addHandler(file_handler)
 
     return logger
