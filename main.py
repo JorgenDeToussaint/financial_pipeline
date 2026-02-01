@@ -1,28 +1,18 @@
-from src.extractors.extractor_template import extract
-from src.loaders.s3_gecko_loader import s3_loader  # Importujemy klasę, nie funkcję
+from src.extractors.extractor_template import extract 
+from src.loaders.s3_gecko_loader import s3_loader 
 from datetime import datetime
+import os
 
 if __name__ == "__main__":
-    # 1. Pobieramy dane
-    dane = extract()
-    print(f"Main odebrał {len(dane)} rekordów.")
-
-    # 2. Jeśli mamy dane, wysyłamy
+    now = datetime.now()
+    dane = extract(timestamp=now) # Przekazujemy czas
+    
     if dane:
-        # Generujemy timestamp raz dla całego procesu
-        now = datetime.now()
-        
-        # Inicjalizujemy loader (Upewnij się, że te dane pasują do Twojego MinIO)
+        #
         loader = s3_loader(
-            endpoint_url="http://localhost:9000", 
-            access_key="minioadmin", 
-            secret_key="minioadmin"
+            endpoint_url="http://minio:9000", 
+            access_key=os.getenv("MINIO_USER"), 
+            secret_key=os.getenv("MINIO_PASSWORD")
         )
         
-        # Wywołujemy metodę wysyłki
-        loader.upload_raw_json(
-            data=dane, 
-            bucket="raw-data", 
-            instrument="stable-coins", 
-            timestamp=now
-        )
+        loader.upload_raw_json(dane, bucket="bronze", instrument="stable-coins", timestamp=now)

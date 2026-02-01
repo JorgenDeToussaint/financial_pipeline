@@ -1,15 +1,15 @@
 import boto3
 import json
 from datetime import datetime
-from botocore.exceptions import ClientConnectionError
+from botocore.exceptions import EndpointConnectionError
 
 class s3_loader:
     def __init__(self, endpoint_url, access_key, secret_key):
         self.s3 = boto3.client(
             's3',
             endpoint_url=endpoint_url,
-            aws_access_key=access_key,
-            aws_secret_key=secret_key
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key
         )
 
     def upload_raw_json(self, data: list, bucket: str, instrument: str, timestamp: datetime):
@@ -34,7 +34,7 @@ class s3_loader:
             print(f"Pomyślnie wysłano: s3://{bucket}/{full_key}")
             return True
         
-        except ClientConnectionError:
+        except EndpointConnectionError:
             print("[!] Błąd: Nie można połączyć się z MinIO. Czy kontener działa?")
             return False
         
