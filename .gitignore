@@ -1,0 +1,22 @@
+# --- SEKRETY (Nigdy nie publikować) ---
+.env
+*.pem
+secrets/
+
+# --- DANE I LOGI (Single Source of Truth to API, nie lokalny dysk) ---
+data/
+logs/
+*.csv
+*.json
+!config/config.yaml  # Wyjątek dla bazowego schematu konfiguracyjnego
+
+# --- PYTHON & TOOLS ---
+__pycache__/
+.venv/
+.pytest_cache/
+.ipynb_checkpoints/
+.DS_Store
+
+# --- DOCKER & INFRA ---
+.terraform/
+terraform.tfstate*
