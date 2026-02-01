@@ -7,7 +7,7 @@ class s3_loader:
     def __init__(self, endpoint_url, access_key, secret_key):
         self.s3 = boto3.client(
             's3',
-            endpoint_url=endpoint_url
+            endpoint_url=endpoint_url,
             aws_access_key=access_key,
             aws_secret_key=secret_key
         )
