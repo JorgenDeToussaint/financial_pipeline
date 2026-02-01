@@ -4,8 +4,8 @@ from datetime import datetime
 from botocore.exceptions import EndpointConnectionError
 from src.utils.logger import get_logger
 
-
 logger = get_logger(__name__)
+
 class s3_loader:
     def __init__(self, endpoint_url, access_key, secret_key):
         self.s3 = boto3.client(
@@ -27,7 +27,7 @@ class s3_loader:
         full_key = f"raw/{partition_path}/{file_name}"
 
         try:
-            logger.info(f"Rozpoczynam ładowanie danych do bucketu: {bucket} (Key: {full_key})")
+            logger.info(f"📤 Rozpoczynam upload do S3: {bucket}/{full_key}")
             json_string = json.dumps(data, indent=4)
             json_bytes = json_string.encode('utf-8')
 
@@ -36,13 +36,21 @@ class s3_loader:
                 Key=full_key,
                 Body=json_bytes 
             )
-            print(f"Pomyślnie wysłano: s3://{bucket}/{full_key}")
+            logger.info(f"✅ Sukces: s3://{bucket}/{full_key}")
             return True
         
-        except EndpointConnectionError as e:  # <--- Dodaj 'as e'
-            logger.error(f"❌ Błąd połączenia z S3: {str(e)}")
+        except EndpointConnectionError as e:
+            logger.error(f"❌ Błąd połączenia z S3 (MinIO): {e}")
             return False
         except Exception as e:
-            logger.error(f"❌ Nieoczekiwany błąd: {str(e)}") # <--- Zaloguj błąd, nie tylko payload!
-            logger.debug(f"Payload błędu: {data}")
+            logger.error(f"❌ Krytyczny błąd ładowania: {type(e).__name__}: {e}")
             return False
+        
+    def download_object(self, bucket: str, key: str):
+        try:
+            logger.info(f' Pobieram obiekt: s3://{bucket}/{key}')
+            response = self.s3.get_object(Bucket=bucket, Key=key)
+            return response['Body'].read()
+        except Exception as e:
+            logger.error(f" NIe udało się pobrać obiektu {key}: {e}")
+            return None
