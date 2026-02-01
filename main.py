@@ -5,14 +5,24 @@ import os
 
 if __name__ == "__main__":
     now = datetime.now()
-    dane = extract(timestamp=now) # Przekazujemy czas
+    
+    # 1. Pobierz
+    dane = extract(timestamp=now)
     
     if dane:
-        #
+        print(f"Main odebrał {len(dane)} rekordów.")
+        
+        # 2. Połącz (używamy nazw z docker-compose)
         loader = s3_loader(
             endpoint_url="http://minio:9000", 
-            access_key=os.getenv("MINIO_USER"), 
-            secret_key=os.getenv("MINIO_PASSWORD")
+            access_key=os.getenv("MINIO_USER", "minioadmin"), 
+            secret_key=os.getenv("MINIO_PASSWORD", "minioadmin")
         )
         
-        loader.upload_raw_json(dane, bucket="bronze", instrument="stable-coins", timestamp=now)
+        # 3. Wyślij
+        loader.upload_raw_json(
+            data=dane, 
+            bucket="bronze", 
+            instrument="stable-coins", 
+            timestamp=now
+        )
