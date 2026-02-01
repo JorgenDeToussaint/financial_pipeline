@@ -1,0 +1,14 @@
+services:
+  app:
+    build: 
+      context: .
+      dockerfile: docker/Dockerfile # upewnij się, że ścieżka pasuje
+    volumes:
+      - ./src:/app/src           # Mapowanie kodu (Hot Reloading)
+      - ./data:/app/data         # Persystencja danych finansowych
+      - ./logs:/app/logs         # Logi dostępne na hostingu
+      - ./config:/app/config     # Konfiguracja instrumentów
+    env_file:
+      - .env                     # Wstrzykiwanie Twoich sekretów [cite: 2026-01-24]
+    stdin_open: true 
+    tty: true
