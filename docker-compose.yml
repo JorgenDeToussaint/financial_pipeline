@@ -42,6 +42,7 @@ services:
       /bin/sh -c "
       until (/usr/bin/mc alias set local_minio http://minio:9000 $MINIO_USER $MINIO_PASSWORD) do echo 'Waiting for MinIO...' && sleep 1; done;
       /usr/bin/mc mb --ignore-existing local_minio/bronze;
+      /usr/bin/mc mb --ignore-existing local_minio/silver;
       exit 0;
       "
 
