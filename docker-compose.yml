@@ -11,7 +11,7 @@ services:
     env_file:
       - .env                     
     working_dir: /app
-    command: python src/main.py
+    command: python main.py
     environment:
       - PYTHONPATH=/app
     stdin_open: true 
