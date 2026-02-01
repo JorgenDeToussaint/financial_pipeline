@@ -2,8 +2,13 @@ from src.extractors.extractor_template import extract
 from src.loaders.s3_gecko_loader import s3_loader 
 from datetime import datetime
 import os
+from src.utils.logger import get_logger
+
+
+logger = get_logger(__name__)
 
 if __name__ == "__main__":
+    logger.info("--- START PIPELINE ---")
     now = datetime.now()
     
     # 1. Pobierz
@@ -26,3 +31,5 @@ if __name__ == "__main__":
             instrument="stable-coins", 
             timestamp=now
         )
+
+    logger.info("--- END PIPELINE ---")
