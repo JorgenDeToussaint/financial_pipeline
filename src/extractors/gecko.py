@@ -1,19 +1,23 @@
+import requests
 from src.extractors.base import BaseExtractor
+from src.utils.logger import get_logger
 
 class GeckoExtractor(BaseExtractor):
-    def __init__(self, pipe_id: str, category: str = None, vs_currency: str = "usd"):
-        # pipe_id to unikalna nazwa instancji, np. 'gecko_stables'
-        super().__init__(name=pipe_id, base_url="https://api.coingecko.com/api/v3/coins/markets")
-        self.category = category
-        self.vs_currency = vs_currency
+    def __init__(self, endpoint: str = "/coins/markets", params: dict = None):
+        self.url = f"https://api.coingecko.com/api/v3{endpoint}"
+        self.params = params or {}
+        self.logger = get_logger("GeckoExtractor")
+
+    def fetch(self) -> dict:
+        """Pobiera surowe dane z API CoinGecko."""
+        try:
+            response = requests.get(self.url, params=self.params, timeout=30)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"Network error: {e}")
+            return None
 
     def get_params(self) -> dict:
-        params = {
-            "vs_currency": self.vs_currency,
-            "order": "market_cap_desc",
-            "per_page": 100,
-            "page": 1
-        }
-        if self.category:
-            params["category"] = self.category
-        return params
+        """Implementacja wymaganej metody abstrakcyjnej."""
+        return self.params

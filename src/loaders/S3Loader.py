@@ -1,44 +1,47 @@
+# src/loaders/S3Loader.py
 import boto3
 import json
-from botocore.exceptions import EndpointConnectionError
 from src.loaders.base import BaseLoader
 from src.utils.logger import get_logger
 
-logger = get_logger(__name__)
-
-class S3Loader(BaseLoader): # Dziedziczymy po kontrakcie
+class S3Loader(BaseLoader):
     def __init__(self, endpoint_url, access_key, secret_key):
-        self.s3 = boto3.client(
+        self.logger = get_logger("S3Loader")
+        self.s3 = boto3.resource(
             's3',
             endpoint_url=endpoint_url,
             aws_access_key_id=access_key,
             aws_secret_access_key=secret_key
         )
 
-    def save(self, data, bucket: str, path: str) -> bool:
+    def save(self, data, bucket, path):
         try:
-            if isinstance(data, (list, dict)):
-                body = json.dumps(data, indent=4).encode('utf-8')
+            obj = self.s3.Object(bucket, path)
+            
+            # Bronze: 1 Fetch -> 1 JSON
+            if isinstance(data, (dict, list)):
+                body = json.dumps(data)
+            # Silver: 1 JSON -> 1 Parquet
             else:
-                body = data  # Zakładamy, że to już są bytes (np. Parquet)
-
-            logger.info(f"📤 Uploading to S3: {bucket}/{path}")
-            self.s3.put_object(Bucket=bucket, Key=path, Body=body)
-            logger.info(f"✅ Success: s3://{bucket}/{path}")
+                body = data
+                
+            obj.put(Body=body)
+            self.logger.info(f"💾 File saved: {bucket}/{path}")
             return True
-        
-        except EndpointConnectionError as e:
-            logger.error(f"❌ S3 Connection Error: {e}")
-            return False
         except Exception as e:
-            logger.error(f"❌ Critical Upload Error: {e}")
+            self.logger.error(f"❌ Save failed: {e}")
             return False
 
-    def load(self, bucket: str, path: str):
+    def load(self, bucket, path):
         try:
-            logger.info(f'📥 Downloading from S3: s3://{bucket}/{path}')
-            response = self.s3.get_object(Bucket=bucket, Key=path)
-            return response['Body'].read()
+            return self.s3.Object(bucket, path).get()['Body'].read()
         except Exception as e:
-            logger.error(f"❌ Download Error for {path}: {e}")
+            self.logger.error(f"❌ Load failed: {e}")
             return None
+
+    def exists(self, bucket, path):
+        try:
+            self.s3.meta.client.head_object(Bucket=bucket, Key=path)
+            return True
+        except:
+            return False
