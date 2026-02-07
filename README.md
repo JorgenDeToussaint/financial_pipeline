@@ -1,36 +1,24 @@
-# Financial multi-instrument pipeline
+# 🌊 Financial Data Lakehouse Engine
 
-So, I am making pipeline on various financial instruments out of curiosity.
-Finall wersion will include full cloud synchronisation, analitical feauters etc.
+## 🎯 Mission
+A resilient, modular data infrastructure designed to eliminate "manual guesswork" in financial analysis. This project is built as a **scalable "Data Hydraulics" system**, prioritizing fault tolerance, cost-efficiency (FinOps), and high-performance analytical processing.
 
-Right now, I have scrapped 100 stablecoins from coingecko API.
-Next thing is to set MinIO for storage(data lake instead of table of facts).
-For now it's running on single T480 thinkpad, future development includes cluster of thinkpads.
+I approach Data Engineering with a **"Local-first, Cloud-ready"** mindset—prototyping on a private cluster of **Thinkpad T480 nodes** (simulating S3 via MinIO) to ensure 100% architectural compatibility with AWS before deployment.
 
-## Already Done:
- - [x] Folder structure for future updates
- - [x] Docker image for stable enviorment
- - [x] Extractor for stablecoins(top 100 on public api v3)
- - [x] MinIO container loading
- - [x] Tranform via polars to parquet(transformer)
- - [x] logging on all scripts
+## 🏗️ Architecture: The Medallion Pattern
+The system follows the **Medallion Architecture**, ensuring data integrity at every hop:
 
-## To do next:
- - [ ] Load to duckdb(loader)
- - [ ] full class templates for next pipes
- - [ ] forex pipe
- - [ ] nasdaq 100 pipe
- - [ ] structurized logging
- - [ ] basic orchiestration in main.py
+* **Bronze (Raw):** Immutable, raw JSON captures from various APIs (CoinGecko, NBP). Served as the "source of truth" and audit trail.
+* **Silver (Cleansed):** Schema-enforced Parquet files. Data is typed, filtered, and optimized using **Polars** for multi-threaded performance.
+* **Gold (Curated):** Analytical datasets optimized for **DuckDB**. This is where "Data Whiskey" matures—joined instruments, currency normalization, and feature engineering.
 
+## 🛠️ Tech Stack & Trade-offs
+* **Python (Polars/DuckDB):** Chosen over Pandas for memory efficiency and lazy evaluation, critical for edge computing on limited hardware.
+* **MinIO:** Local S3-compatible storage to maintain a production-grade infrastructure locally.
+* **Docker:** Containerized environment for consistent "it works on my machine" and "it works on the cluster" reliability.
 
- ## Issue that i do not recognised
- Well then, as these stablecoin works, im not sure on vertiacl/horizontal development as far, I'll propably go along with next scrapers, API's to not only relay on the public ones.
-
- As also i upgraded my main machine(lenovo loq 15iax9), there is no need to be that optimized for ram, but i'll stay with it.
-
- the last one, there i have oportunity for full claster of three thinkpads, that will come after the horizontal development.
-
-### Why polars and duckdb instead of pandas and postgres?
-Storage is cheap, RAM is expensive right now.
-Prefer to make these thinkpads as effective as they can.
+## 🚀 Future Roadmap
+- [ ] **Orchestration Layer:** Implementing a custom "Pipe Registry" in `main.py` for effortless scaling to 1000+ sources.
+- [ ] **Cross-Instrument Analytics:** Joining NBP Forex rates with crypto volatility metrics in the Gold Layer.
+- [ ] **Circuit Breaker Logic:** Automated data quality checks preventing "poisoned" data from reaching the Silver layer.
+- [ ] **Deployment:** Transitioning to AWS (Lambda + S3 + Athena) once the local cluster stress-tests are completed.
