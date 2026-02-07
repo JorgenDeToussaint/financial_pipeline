@@ -5,6 +5,12 @@ A resilient, modular data infrastructure designed to eliminate "manual guesswork
 
 I approach Data Engineering with a **"Local-first, Cloud-ready"** mindset—prototyping on a private cluster of **Thinkpad T480 nodes** (simulating S3 via MinIO) to ensure 100% architectural compatibility with AWS before deployment.
 
+## How to run-it-up?
+Ensure that you have docker engine running, then type:
+```
+docker-compose up
+```
+
 ## 🏗️ Architecture: The Medallion Pattern
 The system follows the **Medallion Architecture**, ensuring data integrity at every hop:
 
