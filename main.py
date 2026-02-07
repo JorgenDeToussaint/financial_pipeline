@@ -2,52 +2,61 @@ import os
 import json
 from datetime import datetime
 from src.utils.logger import get_logger
-from src.extractors.extractor_template import extract
-from src.loaders.s3_gecko_loader import s3_loader
-from src.transformers.transformer_template import transform_to_silver
+from src.loaders.S3Loader import S3Loader
+from src.extractors.gecko import GeckoExtractor
+from src.transformers.gecko import GeckoTransformer
+from src.utils.path_manager import PathManager
 
-
-logger = get_logger(__name__)
+# 1. Inicjalizacja loggera przed pętlą i blokiem main
+logger = get_logger("Main")
 
 if __name__ == "__main__":
-    logger.info("--- START PIPELINE ---")
+    logger.info("🌊 System Ready. Starting Financial Pipeline...")
     now = datetime.now()
     
-    # 1. Extract
-    dane = extract(timestamp=now)
-    if not dane:
-        logger.warning("get empty list - stopping pipeline")
-    else:
-        print(f"Main odebrał {len(dane)} rekordów.")
-        
-        # 2. loader init
-        loader = s3_loader(
-            endpoint_url="http://minio:9000", 
-            access_key=os.getenv("MINIO_USER", "minioadmin"), 
-            secret_key=os.getenv("MINIO_PASSWORD", "minioadmin")
-        )
-        
-        # 3. bronze layer
-        if loader.upload_raw_json(
-            data=dane, 
-            bucket="bronze", 
-            instrument="stable-coins", 
-            timestamp=now
-        ):
-            #4. transform
-            logger.info("Started transforming to silver")
+    loader = S3Loader(
+        endpoint_url=os.getenv("MINIO_ENDPOINT", "http://minio:9000"),
+        access_key=os.getenv("MINIO_USER", "minioadmin"),
+        secret_key=os.getenv("MINIO_PASSWORD", "minioadmin")
+    )
 
-            json_bytes = json.dumps(dane).encode('utf-8')
-            parquet_data = transform_to_silver(json_bytes)
+    # Rejestr rur
+    pipes = [
+        {
+            "id": "gecko_stable",
+            "extractor": GeckoExtractor(
+                endpoint="/coins/markets", 
+                params={"vs_currency": "usd", "category": "stablecoins", "per_page": 100}
+            ),
+            "transformer": GeckoTransformer()
+        }
+    ]
 
-            if parquet_data:
-                #5 silver data to minio3
-                partition = f"instrument=stable-coins/year={now.year}/month={now.month:02d}/day={now.day:02d}"
-                silver_key = f"processed/{partition}/data_{now.strftime('%H%M%S')}.parquet"
+    for pipe in pipes:
+        p_id = pipe["id"]
+        ext = pipe["extractor"]
+        trans = pipe["transformer"]
 
-                loader.upload_bytes(parquet_data, "silver", silver_key)
-            else:
-                logger.error("Transform to silver did not end correctly.")
+        # 1. BRONZE: Pobranie i zapis surowego JSONa
+        logger.info(f"🚀 Processing pipe: {p_id}")
+        raw_data = ext.fetch()
+        if not raw_data:
+            logger.error(f"❌ Failed to fetch data for {p_id}")
+            continue
 
+        path_json = PathManager.get_path("raw", p_id, now, "json")
+        if loader.save(raw_data, "bronze", path_json):
+            logger.info(f"📦 Bronze layer saved: {path_json}")
+            
+            # 2. SILVER: Transformacja i zapis Parquet
+            if loader.exists("bronze", path_json):
+                bronze_bytes = loader.load("bronze", path_json)
+                silver_parquet = trans.transform(bronze_bytes)
+                
+                if silver_parquet:
+                    path_pq = PathManager.get_path("processed", p_id, now, "parquet")
+                    if loader.save(silver_parquet, "silver", path_pq):
+                        logger.info(f"✨ Silver layer saved: {path_pq}")
+                        logger.info(f"✅ Pipe {p_id} completed successfully.")
 
-    logger.info("--- END PIPELINE ---")
+    logger.info("🏁 Pipeline finished.")

@@ -1,28 +1,26 @@
 from abc import ABC, abstractmethod
-import logging
+from src.utils.logger import get_logger
 import requests
 
 class BaseExtractor(ABC):
     def __init__(self, name:str, base_url: str):
         self.name = name
         self.base_url = base_url
-        self.logger = logging.getLogger(f'src.extractors.{name}')
+        self.logger = get_logger(f"extractor.{name}")
 
     @abstractmethod
     def get_params(self) -> dict:
         pass
 
     def fetch(self) -> list:
-        self.logger.info(f"Downloading: {self.name}")
+        self.logger.info(f"🚀 Start: {self.base_url}")
         try:
             response = requests.get(self.base_url, params=self.get_params(), timeout=30)
-            return self.validate(response)
-        
-        except Exception as e:
-            self.logger.error(f"Error in pipe {self.name}: {e}")
+            if response.status_code == 200:
+                return response.json()
+            
+            self.logger.error(f"⚠️ API Error {response.status_code}: {response.text}")
             return []
-        
-    def validate(self, response: requests.Response) -> list:
-        if response.status_code == 200:
-            return response.json()
-        return []
+        except Exception as e:
+            self.logger.error(f"❌ Connection failed: {e}")
+            return []
