@@ -4,7 +4,9 @@ from datetime import datetime
 from src.utils.logger import get_logger
 from src.loaders.S3Loader import S3Loader
 from src.extractors.gecko import GeckoExtractor
+from src.extractors.nbp import NBPExtractor
 from src.transformers.gecko import GeckoTransformer
+from src.transformers.NBPTrans import NBPTransformer
 from src.utils.path_manager import PathManager
 
 # 1. Inicjalizacja loggera przed pętlą i blokiem main
@@ -22,14 +24,19 @@ if __name__ == "__main__":
 
     # Rejestr rur
     pipes = [
-        {
-            "id": "gecko_stable",
-            "extractor": GeckoExtractor(
-                endpoint="/coins/markets", 
-                params={"vs_currency": "usd", "category": "stablecoins", "per_page": 100}
-            ),
-            "transformer": GeckoTransformer()
-        }
+    {
+        "id": "gecko_stable",
+        "extractor": GeckoExtractor(
+            endpoint="/coins/markets", 
+            params={"vs_currency": "usd", "category": "stablecoins", "per_page": 100}
+        ),
+        "transformer": GeckoTransformer()
+    },
+    {
+        "id": "nbp_table_a",
+        "extractor": NBPExtractor(table="A"),
+        "transformer": NBPTransformer()
+    }
     ]
 
     for pipe in pipes:
