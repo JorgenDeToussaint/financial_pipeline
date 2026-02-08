@@ -7,6 +7,7 @@ from src.extractors.gecko import GeckoExtractor
 from src.extractors.nbp import NBPExtractor
 from src.transformers.gecko import GeckoTransformer
 from src.transformers.NBPTrans import NBPTransformer
+from src.extractors.yah_etf import YahooETF
 from src.utils.path_manager import PathManager
 
 # 1. Inicjalizacja loggera przed pętlą i blokiem main
@@ -36,6 +37,11 @@ if __name__ == "__main__":
         "id": "nbp_table_a",
         "extractor": NBPExtractor(table="A"),
         "transformer": NBPTransformer()
+    },
+    {
+        "id": "yahoo_spy", 
+        "extractor": YahooETF(ticker="SPY"),
+        "transformer": YahooTransformer()
     }
     ]
 

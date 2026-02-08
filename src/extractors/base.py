@@ -15,7 +15,12 @@ class BaseExtractor(ABC):
     def fetch(self) -> list:
         self.logger.info(f"🚀 Start: {self.base_url}")
         try:
-            response = requests.get(self.base_url, params=self.get_params(), timeout=30)
+            response = requests.get(
+                self.base_url, 
+                params=self.get_params(), 
+                headers=self.get_headers(), # <--- TU JEST ZMIANA
+                timeout=30
+            )
             if response.status_code == 200:
                 return response.json()
             
