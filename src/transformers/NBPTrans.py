@@ -4,26 +4,28 @@ import json
 from src.transformers.base import BaseTransformer
 from src.utils.logger import get_logger
 
-class NBPTransformer(BaseTransformer):
+class YahooTransformer(BaseTransformer):
     def __init__(self):
-        self.logger = get_logger("NBPTransformer")
+        super().__init__("Yahoo")
 
-    def transform(self, raw_bytes: bytes) -> bytes:
-        self.logger.info("Normalizing NBP Table to Silver")
-        data = json.loads(raw_bytes)
-        effective_date = data.get('effectiveDate')
-        rates = data.get('rates', [])
-
-        df = pl.from_dicts(rates).select([
-            pl.lit(effective_date).str.to_date().alias("date"),
-            pl.col("code").alias("currency"),
-            pl.col("mid").alias("rate_pln")
-        ])
-        pln_row = pl.DataFrame({"date": [df["date"][0]], "currency": ["PLN"], "rate_pln": [1.0]})
-        df = pl.concat([df, pln_row])
-
-        self.logger.info(f"Silver NBP ready. Currencies processed: {df.height}")
-
-        buffer = io.BytesIO()
-        df.write_parquet(buffer)
-        return buffer.getvalue()
+    def run_logic(self, data: dict) -> pl.DataFrame:
+        # Tu ląduje pęseta, bo dane Yahoo są w: data['chart']['result'][0]
+        result = data.get('chart', {}).get('result', [{}])[0]
+        
+        timestamps = result.get('timestamp', [])
+        indicators = result.get('indicators', {}).get('quote', [{}])[0]
+        
+        # Złożenie tego w Polarsie (Vertical Ingestion)
+        df = pl.DataFrame({
+            "timestamp": timestamps,
+            "open": indicators.get('open'),
+            "high": indicators.get('high'),
+            "low": indicators.get('low'),
+            "close": indicators.get('close'),
+            "volume": indicators.get('volume')
+        })
+        
+        # Konwersja czasu (Unix -> Datetime)
+        return df.with_columns(
+            pl.from_epoch("timestamp", time_unit="s").alias("datetime")
+        )
