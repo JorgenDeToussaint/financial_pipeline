@@ -1,74 +1,70 @@
-import os
+import yaml
+import pathlib
 from datetime import datetime
+from src.models.pipeconfig import AppConfig
+from src.factories.pipe_factory import PipeFactory
 from src.utils.logger import get_logger
-from src.loaders.S3Loader import S3Loader
-from src.extractors.gecko import GeckoExtractor
-from src.extractors.nbp import NBPExtractor
-from src.transformers.gecko import GeckoTransformer
-from src.transformers.NBPTrans import NBPTransformer
-from src.extractors.yah_etf import YahooETF
 from src.utils.path_manager import PathManager
-from src.transformers.yahoo_transformer import YahooTransformer
+from src.utils.s3_loader import S3Loader
 
 logger = get_logger("Main")
 
-if __name__ == "__main__":
-    logger.info("🌊 System Ready. Starting Financial Pipeline...")
-    now = datetime.now()
+def run_pipelines():
+    config_path = pathlib.Path("config/pipes.yml")
+    with open(config_path, "r") as f:
+        raw_config = yaml.safe_load(f)
+
+    try:
+        app_config = AppConfig(**raw_config)
+    except Exception as e:
+        logger.error(f"❌ Błąd w konfiguracji YAML: {e}")
+        return
     
-    loader = S3Loader(
-        endpoint_url=os.getenv("MINIO_ENDPOINT", "http://minio:9000"),
-        access_key=os.getenv("MINIO_USER", "minioadmin"),
-        secret_key=os.getenv("MINIO_PASSWORD", "minioadmin")
-    )
+    now = datetime.now()
+    s3 = S3Loader()
 
-    # Rejestr rur
-    pipes = [
-    {
-        "id": "gecko_stable",
-        "extractor": GeckoExtractor(
-            endpoint="/coins/markets", 
-            params={"vs_currency": "usd", "category": "stablecoins", "per_page": 100}
-        ),
-        "transformer": GeckoTransformer()
-    },
-    {
-        "id": "nbp_table_a",
-        "extractor": NBPExtractor(table="A"),
-        "transformer": NBPTransformer()
-    },
-    {
-        "id": "yahoo_spy", 
-        "extractor": YahooETF(ticker="SPY"),
-        "transformer": YahooTransformer()
-    }
-    ]
+    logger.info("🌊 System Ready. Starting Financial Pipeline...")
 
-    for pipe in pipes:
-        p_id = pipe["id"]
-        ext = pipe["extractor"]
-        trans = pipe["transformer"]
+    for pipe in app_config.pipes:
+        logger.info(f"🚀 Processing pipe: {pipe.id}")
 
-        # 1. BRONZE: Pobranie i zapis surowego JSONa
-        logger.info(f"🚀 Processing pipe: {p_id}")
-        raw_data = ext.fetch()
-        if not raw_data:
-            logger.error(f"❌ Failed to fetch data for {p_id}")
+        try:
+            extractor = PipeFactory.get_exctractor(pipe.extractor_type, pipe.params)
+            transformer = PipeFactory.get_transformer(pipe.transformer_type, pipe.params)
+
+            raw_data = extractor.fetch()
+            if not raw_data:
+                continue
+
+            bronze_path = PathManager.get_path(
+                layer="bronze",
+                instrument=pipe.id,
+                date=now,
+                ext="json"
+                granularity=pipe.granularity
+            )
+
+            s3.save(bronze_path, raw_data)
+            logger.info(f"📦 Bronze layer saved: {bronze_path}")
+
+            silver_data = transformer.transform(raw_data)
+
+            if silver_data:
+                silver_path = PathManager.get_path(
+                    layer="silver",
+                    instrument=pipe.id,
+                    date=now,
+                    ext="parquet",
+                    granularity=pipe.granularity
+                )
+                s3.save(silver_path, silver_data)
+                logger.info(f"💎 Silver layer saved: {silver_path}")
+
+        except Exception as e:
+            logger.error(f"❌ Critical error in pipe {pipe.id}: {e}")
             continue
 
-        path_json = PathManager.get_path("raw", p_id, now, "json")
-        if loader.save(raw_data, "bronze", path_json):
-            logger.info(f"📦 Bronze layer saved: {path_json}")
-            
-            # 2. SILVER: Transformacja i zapis Parquet
-            if loader.exists("bronze", path_json):
-                bronze_bytes = loader.load("bronze", path_json)
-                silver_parquet = trans.transform(bronze_bytes)
-                
-                if silver_parquet:
-                    path_pq = PathManager.get_path("processed", p_id, now, "parquet")
-                    if loader.save(silver_parquet, "silver", path_pq):
-                        logger.info(f"✨ Silver layer saved: {path_pq}")
-                        logger.info(f"✅ Pipe {p_id} completed successfully.")
-
     logger.info("🏁 Pipeline finished.")
+
+if __name__ == "__main__":
+    run_pipelines()

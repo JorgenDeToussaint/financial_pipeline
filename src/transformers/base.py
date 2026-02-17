@@ -14,6 +14,17 @@ class BaseTransformer(ABC):
     def run_logic(self, data: any) -> pl.DataFrame:
         pass
 
+    def validate(self, df: pl.DataFrame) -> bool:
+        if df is None or df.height == 0:
+            self.logger.error("Validation Failed: DataFrame is empty.")
+
+        null_count = df.null_count().sum().sum()
+        if null_count > (df.height * df.width * 0.5):
+            self.logger.error(f"❌ Validation Failed: Too many nulls ({null_count})")
+            return False
+        
+        return True
+
     def transform(self, raw_bytes: bytes) -> bytes | None:
         if not raw_bytes:
             self.logger.error("Empty payload recieved")
@@ -24,8 +35,7 @@ class BaseTransformer(ABC):
 
             df = self.run_logic(data)
 
-            if df is None or df.height == 0:
-                self.logger.warning(f"Transformation resulted in empty DataFrame for {self.name}")
+            if not self.validate(df):
                 return None
             
             buffer = io.BytesIO()

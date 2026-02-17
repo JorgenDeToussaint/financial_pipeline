@@ -1,0 +1,19 @@
+pipes:
+  - id: gecko_stable
+    extractor_type: gecko
+    transformer_type: gecko
+    params: 
+      endpoint: "/coins/markets"
+      params: {"vs_currency": "usd", "category": "stablecoins"}
+    granularity: hourly
+
+  - id: nbp_table_a
+    extractor_type: nbp
+    transformer_type: nbp
+    params: { "table": "A" }
+
+  - id: yahoo_spy
+    extractor_type: yahoo
+    transformer_type: yahoo
+    params: { "ticker": "SPY" }
+    granularity: hourly
