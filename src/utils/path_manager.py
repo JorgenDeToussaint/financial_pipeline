@@ -17,7 +17,8 @@ class PathManager:
         
         if granularity == "hourly":
             partition += f"/hour={ts.hour:02d}"
-            filename = f"data_{ts.hour:02d}00" 
+            filename = f"data_{ts.hour:02d}00"
+        else: 
             filename = "data_daily"
 
         return f"{layer}/{partition}/{filename}.{ext}"

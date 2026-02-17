@@ -1,31 +1,35 @@
 import polars as pl
-import io
-import json
-from src.transformers.base import BaseTransformer
-from src.utils.logger import get_logger
+from base import BaseTransformer
 
-class YahooTransformer(BaseTransformer):
+class NBPTransformer(BaseTransformer):
     def __init__(self):
-        super().__init__("Yahoo")
+        super().__init__("NBP")
 
-    def run_logic(self, data: dict) -> pl.DataFrame:
-        # Tu ląduje pęseta, bo dane Yahoo są w: data['chart']['result'][0]
-        result = data.get('chart', {}).get('result', [{}])[0]
+    def run_logic(self, data: list) -> pl.DataFrame:
+        try:
+            if not data or not isinstance(data, list):
+                self.logger.warning("Invalid NBP payload format")
+                return pl.DataFrame
+            
+            payload = data[0]
+            effective_date = payload.get("effectiveDate")
+            rates = payload.get("rates", [])
+
+            if not rates:
+                self.logger.warning("No rates found in NBP payload.")
+                return pl.DataFrame()
+            
+            df_clean = (
+                pl.DataFrame(rates)
+                .with_columns([
+                    pl.lit(effective_date).str.to_date("%Y-%m-%d").alias("date"),
+                    pl.col("mid").cast(pl.Decimal(2,8))
+                ])
+                .select(["date", "code", "mid"])
+            )
+
+            return df_clean
         
-        timestamps = result.get('timestamp', [])
-        indicators = result.get('indicators', {}).get('quote', [{}])[0]
-        
-        # Złożenie tego w Polarsie (Vertical Ingestion)
-        df = pl.DataFrame({
-            "timestamp": timestamps,
-            "open": indicators.get('open'),
-            "high": indicators.get('high'),
-            "low": indicators.get('low'),
-            "close": indicators.get('close'),
-            "volume": indicators.get('volume')
-        })
-        
-        # Konwersja czasu (Unix -> Datetime)
-        return df.with_columns(
-            pl.from_epoch("timestamp", time_unit="s").alias("datetime")
-        )
+        except Exception as e:
+            self.logger.error(f"NBP Parsing failed: {e}")
+            return pl.DataFrame

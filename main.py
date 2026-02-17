@@ -1,5 +1,4 @@
 import os
-import json
 from datetime import datetime
 from src.utils.logger import get_logger
 from src.loaders.S3Loader import S3Loader
@@ -9,8 +8,8 @@ from src.transformers.gecko import GeckoTransformer
 from src.transformers.NBPTrans import NBPTransformer
 from src.extractors.yah_etf import YahooETF
 from src.utils.path_manager import PathManager
+from src.transformers.yahoo_transformer import YahooTransformer
 
-# 1. Inicjalizacja loggera przed pętlą i blokiem main
 logger = get_logger("Main")
 
 if __name__ == "__main__":
