@@ -7,8 +7,8 @@ class YahooETF(BaseExtractor):
 
     def get_params(self) -> dict:
         return {
-            "range": "id",
-            "interval": "id",
+            "range": "1mo",
+            "interval": "1d",
             "includePrePost": "false"
         }
     

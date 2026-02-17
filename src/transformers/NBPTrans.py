@@ -1,5 +1,5 @@
 import polars as pl
-from base import BaseTransformer
+from src.transformers.base import BaseTransformer
 
 class NBPTransformer(BaseTransformer):
     def __init__(self):
@@ -23,7 +23,7 @@ class NBPTransformer(BaseTransformer):
                 pl.DataFrame(rates)
                 .with_columns([
                     pl.lit(effective_date).str.to_date("%Y-%m-%d").alias("date"),
-                    pl.col("mid").cast(pl.Decimal(2,8))
+                    pl.col("mid").cast(pl.Float64)
                 ])
                 .select(["date", "code", "mid"])
             )

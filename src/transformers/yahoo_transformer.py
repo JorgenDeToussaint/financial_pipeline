@@ -1,5 +1,5 @@
 import polars as pl
-from base import BaseTransformer
+from src.transformers.base import BaseTransformer
 
 class YahooTransformer(BaseTransformer):
     def __init__(self):

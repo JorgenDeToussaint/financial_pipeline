@@ -1,41 +1,37 @@
 import polars as pl
-import json
-import io
-from datetime import datetime
 from src.transformers.base import BaseTransformer
-from src.utils.logger import get_logger
 
 class GeckoTransformer(BaseTransformer):
     def __init__(self):
-        self.logger = get_logger("GeckoTransformer")
+        super().__init__("CoinGecko")
 
-    def transform(self, raw_bytes: bytes) -> bytes:
-        if not raw_bytes:
-            self.logger.error("Empty payload received.")
-            return None
-
+    def run_logic(self, data: list) -> pl.DataFrame:
         try:
-            data = json.loads(raw_bytes)
+            if not data or not isinstance(data, list):
+                self.logger.warning("Invalid Gecko payload format.")
+                return pl.DataFrame
             
-            # Polars Polymorphism: dict (Scalar) vs list (Vector)
-            if isinstance(data, dict):
-                df = pl.DataFrame([data])
-            elif isinstance(data, list):
-                df = pl.from_dicts(data)
-            else:
-                raise TypeError(f"Unexpected data format: {type(data)}")
+            df = pl.DataFrame(data)
 
-            # Metadata Injection
-            df = df.with_columns([
-                pl.lit(datetime.now().isoformat()).alias("processed_at"),
-                pl.lit("coingecko").alias("data_source")
-            ])
+            df_clean = (
+                df.select([
+                    pl.col("symbol").str.to_uppercase().alias("ticker"),
+                    pl.col("current_price").alias("price_usd"),
+                    pl.col("market_cap"),
+                    pl.col("total_volume"),
+                    pl.col("last_updated")
+                ])
+                .with_columns([
+                    pl.col("last_updated").str.to_datetime(time_zone="UTC").alias("datetime"),
+                    pl.col("price_usd").cast(pl.Decimal(18, 8)),
+                    pl.col("market_cap").cast(pl.Decimal(18, 2)),
+                    pl.col("total_volume").cast(pl.Decimal(18, 2))
+                ])
+                .drop("last_updated")
+            )
 
-            # Memory-efficient Parquet serialization
-            buffer = io.BytesIO()
-            df.write_parquet(buffer)
-            return buffer.getvalue()
-
+            return df_clean
+        
         except Exception as e:
-            self.logger.error(f"Transformation failed: {str(e)}")
-            return None
+            self.logger.error(f"Gecko Parsing failed: {e}")
+            return pl.DataFrame

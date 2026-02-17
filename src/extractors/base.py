@@ -12,6 +12,9 @@ class BaseExtractor(ABC):
     def get_params(self) -> dict:
         pass
 
+    def get_headers(self) -> dict:
+        pass
+
     def fetch(self) -> list:
         self.logger.info(f"🚀 Start: {self.base_url}")
         try:

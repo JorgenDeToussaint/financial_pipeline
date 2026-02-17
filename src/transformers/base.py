@@ -29,7 +29,7 @@ class BaseTransformer(ABC):
                 return None
             
             buffer = io.BytesIO()
-            df.write_parquet(buffer)
+            df.write_parquet(file=buffer)
             return buffer.getvalue()
         
         except Exception as e:
