@@ -17,21 +17,27 @@ class BaseTransformer(ABC):
     def validate(self, df: pl.DataFrame) -> bool:
         if df is None or df.height == 0:
             self.logger.error("Validation Failed: DataFrame is empty.")
+            return False
 
-        null_count = df.null_count().sum().sum()
+        total_nulls = df.null_count().sum_horizontal().sum()
+        null_count = sum(df.null_count().row(0))
+
         if null_count > (df.height * df.width * 0.5):
             self.logger.error(f"❌ Validation Failed: Too many nulls ({null_count})")
             return False
         
         return True
 
-    def transform(self, raw_bytes: bytes) -> bytes | None:
-        if not raw_bytes:
+    def transform(self, raw_data: any) -> bytes | None:
+        if raw_data is None:
             self.logger.error("Empty payload recieved")
             return None
         
         try:
-            data = json.loads(raw_bytes)
+            if isinstance(raw_data, (bytes, str)):
+                data = json.loads(raw_data)
+            else:
+                data = raw_data
 
             df = self.run_logic(data)
 

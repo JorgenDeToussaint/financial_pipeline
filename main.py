@@ -6,12 +6,12 @@ from src.models.pipeconfig import AppConfig
 from src.factories.pipe_factory import PipeFactory
 from src.utils.logger import get_logger
 from src.utils.path_manager import PathManager
-from src.utils.s3_loader import S3Loader
+from src.loaders.S3Loader import S3Loader
 
 logger = get_logger("Main")
 
 def run_pipelines():
-    config_path = pathlib.Path("config/pipes.yml")
+    config_path = pathlib.Path("config/pipes.yaml")
     with open(config_path, "r") as f:
         raw_config = yaml.safe_load(f)
 
@@ -42,7 +42,7 @@ def run_pipelines():
         logger.info(f"🚀 Processing pipe: {pipe.id}")
 
         try:
-            extractor = PipeFactory.get_exctractor(pipe.extractor_type, pipe.params)
+            extractor = PipeFactory.get_extractor(pipe.extractor_type, pipe.params)
             transformer = PipeFactory.get_transformer(pipe.transformer_type, pipe.params)
 
             raw_data = extractor.fetch()
@@ -57,7 +57,11 @@ def run_pipelines():
                 granularity=pipe.granularity
             )
 
-            s3.save(bronze_path, raw_data)
+            s3.save(
+                data=raw_data,
+                bucket="bronze",
+                path=bronze_path
+            )
             logger.info(f"📦 Bronze layer saved: {bronze_path}")
 
             silver_data = transformer.transform(raw_data)
@@ -70,7 +74,11 @@ def run_pipelines():
                     ext="parquet",
                     granularity=pipe.granularity
                 )
-                s3.save(silver_path, silver_data)
+                s3.save(
+                    data=silver_data,
+                    bucket="silver",
+                    path=silver_path
+                )
                 logger.info(f"💎 Silver layer saved: {silver_path}")
 
         except Exception as e:

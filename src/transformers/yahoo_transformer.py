@@ -54,4 +54,4 @@ class YahooTransformer(BaseTransformer):
         
         except Exception as e:
             self.logger.error(f"Transformation logic failed for Yahoo: {e}")
-            return pl.DataFrame
+            return pl.DataFrame()

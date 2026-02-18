@@ -34,4 +34,4 @@ class GeckoTransformer(BaseTransformer):
         
         except Exception as e:
             self.logger.error(f"Gecko Parsing failed: {e}")
-            return pl.DataFrame
+            return pl.DataFrame()

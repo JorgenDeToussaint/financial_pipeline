@@ -17,7 +17,7 @@ class PipeFactory:
         return mapping[e_type]()
     
     @staticmethod
-    def get_transformer(t_type: str):
+    def get_transformer(t_type: str, params: dict = None):
         mapping = {
             "gecko": lambda: GeckoTransformer(),
             "nbp": lambda: NBPTransformer(),
