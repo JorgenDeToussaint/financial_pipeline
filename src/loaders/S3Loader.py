@@ -45,3 +45,11 @@ class S3Loader(BaseLoader):
             return True
         except:
             return False
+        
+    def is_ready(self) -> bool:
+        try:
+            # Próba wylistowania bucketów to najprostszy test połączenia
+            self.client.list_buckets()
+            return True
+        except Exception:
+            return False

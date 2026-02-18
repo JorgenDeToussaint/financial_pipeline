@@ -1,3 +1,4 @@
+import time
 import yaml
 import pathlib
 from datetime import datetime
@@ -23,7 +24,19 @@ def run_pipelines():
     now = datetime.now()
     s3 = S3Loader()
 
-    logger.info("🌊 System Ready. Starting Financial Pipeline...")
+    logger.info("⏳ Waiting for MinIO to be ready...")
+    max_retries = 10
+    retry_count = 0
+    while retry_count < max_retries:
+        if s3.is_ready(): # Zakładamy, że dopiszemy tę metodę do S3Loader
+            logger.info("✅ MinIO is up and running!")
+            break
+        retry_count += 1
+        logger.warning(f"⚠️ MinIO not ready (attempt {retry_count}/{max_retries}). Retrying in 3s...")
+        time.sleep(3)
+    else:
+        logger.error("❌ Could not connect to MinIO. Exiting.")
+        return
 
     for pipe in app_config.pipes:
         logger.info(f"🚀 Processing pipe: {pipe.id}")
@@ -40,7 +53,7 @@ def run_pipelines():
                 layer="bronze",
                 instrument=pipe.id,
                 date=now,
-                ext="json"
+                ext="json",
                 granularity=pipe.granularity
             )
 
