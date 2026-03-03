@@ -1,7 +1,9 @@
 from .base import BaseExtractor
+from .registry import register_extractor
 
+@register_extractor("yahoo")
 class YahooETF(BaseExtractor):
-    def __init__(self, ticker: str):
+    def __init__(self, ticker: str, **kwargs):
         url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
         super().__init__(name=f"Yahoo-{ticker}", base_url=url)
 

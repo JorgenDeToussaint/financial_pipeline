@@ -1,19 +1,30 @@
 pipes:
-  - id: gecko_stable
+  - id: gecko_market_scan
     extractor_type: gecko
     transformer_type: gecko
     params: 
       endpoint: "/coins/markets"
-      params: {"vs_currency": "usd", "category": "stablecoins"}
+      categories:
+        - stablecoins
+        - decentralized-finance-defi
+        - layer-1
+        - small-contract-platform
+      per page: 250
+      order: market_cap_desc
+    concurency_limit: 2
     granularity: hourly
 
-  - id: nbp_table_a
+  - id: nbp_exchange_rates
     extractor_type: nbp
     transformer_type: nbp
-    params: { "table": "A" }
+    params:
+      tables: [A, B]
+    granularity: daily
 
-  - id: yahoo_spy
+  - id: yahoo_finance_primary
     extractor_type: yahoo
     transformer_type: yahoo
-    params: { "ticker": "SPY" }
+    params:
+      tickers: ["SPY", "BRK-B", "7203.T", "GC=F", "^GSPC"]
+    concurency_limit: 3
     granularity: hourly
