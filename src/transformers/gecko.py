@@ -9,9 +9,16 @@ class GeckoTransformer(BaseTransformer):
         try:
             if not data or not isinstance(data, list):
                 self.logger.warning("Invalid Gecko payload format.")
-                return pl.DataFrame
+                return pl.DataFrame() # Mała poprawka: dodaj nawiasy ()
             
-            df = pl.DataFrame(data)
+            # --- TO JEST KLUCZOWA ZMIANA ---
+            # Definiujemy typy dla "problemowych" kolumn zanim Polars zacznie je czytać
+            overrides = {
+                "market_cap": pl.Float64,
+                "total_volume": pl.Float64
+            }
+            
+            df = pl.from_dicts(data, schema_overrides=overrides)
 
             df_clean = (
                 df.select([
