@@ -1,6 +1,7 @@
 import polars as pl
 from src.transformers.base import BaseTransformer
 
+@register_transformer("gecko")
 class YahooTransformer(BaseTransformer):
     def __init__(self):
         super().__init__("Yahoo")
