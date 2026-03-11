@@ -8,7 +8,7 @@ pipes:
         - stablecoins
         - decentralized-finance-defi
         - layer-1
-        - small-contract-platform
+        - smart-contract-platform
       per page: 250
       order: market_cap_desc
     concurency_limit: 2

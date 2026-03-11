@@ -16,67 +16,71 @@ class AsyncManager:
 
     async def _process_pipe(self, session: aiohttp.ClientSession, pipe, now: datetime):
         async with self.semaphore:
-            self.logger.info(f"🚀 Processing pipe: {pipe.id}")
             try:
                 extractor_cls = EXTRACTOR_REGISTRY.get(pipe.extractor_type)
                 if not extractor_cls:
                     self.logger.error(f"Unknown extractor: {pipe.extractor_type}")
                     return
-                
+
+                # Mapujemy klucze z YAML na parametry w kodzie
+                mapping = {
+                    "categories": "category",
+                    "tickers": "ticker",
+                    "tables": "table",
+                    "ids": "ids"
+                }
+
                 params = pipe.params.copy()
-                items = []
-                key_name = ""
+                # Szukamy co w YAML jest listą
+                loop_key = next((k for k in mapping.keys() if k in params), None)
+                items = params.pop(loop_key, [None]) if loop_key else [None]
+                singular_key = mapping.get(loop_key)
 
-                if pipe.extractor_type == "gecko":
-                    if "vs_currency" not in params:
-                        params["vs_currency"] = "usd"
-                    
-                    all_ids = params.pop("ids", [])
-                    if all_ids:
-                        chunks = [all_ids[i:i + 250] for i in range(0, len(all_ids), 250)]
-                        items = [",".join(chunk) for chunk in chunks]
-                        key_name = "ids"
-                    else:
-                        items = [None]
-                else:
-                    items = params.pop("tickers", None) or params.pop("tables", None)
-                    key_name = "ticker" if pipe.extractor_type == "yahoo" else "table"
-                    if items is None:
-                        items = [None]
-
-                for idx, item in enumerate(items):
+                for item in items:
                     current_params = params.copy()
                     
                     if item:
-                        current_params[key_name] = item
-                        suffix = f"batch_{idx}" if key_name == "ids" else item
-                        display_id = f"{pipe.id}_{suffix}"
+                        current_params[singular_key] = item
+                        display_id = f"{pipe.id}_{item}"
                     else:
                         display_id = pipe.id
 
+                    self.logger.info(f"🚀 [Task: {display_id}] Start")
+
+                    # Inicjalizacja komponentu
                     if pipe.extractor_type == "gecko":
+                        # FIX dla Gecko: musi być waluta, inaczej 422
+                        if "vs_currency" not in current_params:
+                            current_params["vs_currency"] = "usd"
+                        # Poprawka: zamiana 'per page' na 'per_page' (bo YAML ma spację)
+                        if "per page" in current_params:
+                            current_params["per_page"] = current_params.pop("per page")
+                            
                         extractor = extractor_cls(params=current_params)
                     else:
                         extractor = extractor_cls(**current_params)
 
                     transformer = PipeFactory.get_transformer(pipe.transformer_type, current_params)
 
+                    # --- PROCES ---
                     raw_data = await extractor.fetch(session)
                     if not raw_data:
                         continue
-                
+
+                    # Zapis Bronze (4 osobne pliki dzięki display_id)
                     bronze_path = PathManager.get_path("bronze", display_id, now, "json", pipe.granularity)
                     self.s3.save(data=raw_data, bucket="bronze", path=bronze_path)
 
+                    # Zapis Silver
                     silver_data = transformer.transform(raw_data)
                     if silver_data is not None:
                         silver_path = PathManager.get_path("silver", display_id, now, "parquet", pipe.granularity)
                         self.s3.save(data=silver_data, bucket="silver", path=silver_path)
 
-                    self.logger.info(f"✅ Sub-pipe {display_id} finished.")
+                    self.logger.info(f"✅ [Task: {display_id}] Sukces")
 
             except Exception as e:
-                self.logger.error(f"❌ Error in pipe {pipe.id}: {e}")
+                self.logger.error(f"❌ [Pipe: {pipe.id}] Błąd: {e}")
 
     async def run_all(self):
         now = datetime.now()
