@@ -51,13 +51,14 @@ class S3Loader(BaseLoader):
             self.logger.error(f"❌ Load failed: {e}")
             return None
 
-    def exists(self, bucket, path):
+    def exists(self, bucket: str, path: str) -> bool:
         try:
-            # Używamy klienta do HeadObject (najszybszy check)
-            self.client.head_object(Bucket=bucket, Key=path)
+            self.s3.Object(bucket, path).load()
             return True
-        except:
-            return False
+        except self.client.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == '404':
+                return False
+            raise
         
     def is_ready(self) -> bool:
         try:

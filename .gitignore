@@ -9,6 +9,7 @@ logs/
 *.csv
 *.json
 !config/config.yaml  # Wyjątek dla bazowego schematu konfiguracyjnego
+repomix-output.xml
 
 # --- PYTHON & TOOLS ---
 __pycache__/

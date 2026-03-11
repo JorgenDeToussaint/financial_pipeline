@@ -23,9 +23,9 @@ class GeckoTransformer(BaseTransformer):
                 ])
                 .with_columns([
                     pl.col("last_updated").str.to_datetime(time_zone="UTC").alias("datetime"),
-                    pl.col("price_usd").cast(pl.Decimal(18, 8)),
-                    pl.col("market_cap").cast(pl.Decimal(18, 2)),
-                    pl.col("total_volume").cast(pl.Decimal(18, 2))
+                    pl.col("price_usd").cast(pl.Decimal(24, 8)),
+                    pl.col("market_cap").cast(pl.Float64),
+                    pl.col("total_volume").cast(pl.Float64)
                 ])
                 .drop("last_updated")
             )

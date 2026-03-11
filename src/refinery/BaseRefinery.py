@@ -14,7 +14,7 @@ class BaseRefinery(ABC):
         try:
             self._verify_dependencies(date)
 
-            with duckdb.connetct(":memory:") as conn:
+            with duckdb.connect(":memory:") as conn:
                 self.logger.info(f"💎 Start rafinacji raportu: {self.name}")
 
                 conn.execute("INSTALL httpfs; LOAD httpfs;")
