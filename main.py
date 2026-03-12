@@ -1,8 +1,11 @@
 import asyncio
 import yaml
 import pathlib
+import src.extractors
+import src.transformers
 from src.models.pipeconfig import AppConfig
 from src.async_manager import AsyncManager
+
 
 async def start():
     config_path = pathlib.Path("config/pipes.yaml")

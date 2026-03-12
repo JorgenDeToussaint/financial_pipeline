@@ -1,7 +1,7 @@
 import asyncio
 import aiohttp
 from datetime import datetime
-from src.extractors.registry import EXTRACTOR_REGISTRY
+from src.registry import EXTRACTOR_REGISTRY, TRANSFORMER_REGISTRY
 from src.factories.pipe_factory import PipeFactory
 from src.utils.logger import get_logger
 from src.utils.path_manager import PathManager

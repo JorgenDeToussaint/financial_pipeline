@@ -1,26 +1,21 @@
-from src.extractors.gecko import GeckoExtractor
-from src.extractors.nbp import NBPExtractor
-from src.extractors.yah_etf import YahooETF
-from src.transformers.gecko import GeckoTransformer
-from src.transformers.NBPTrans import NBPTransformer
-from src.transformers.yahoo_transformer import YahooTransformer
-
+from src.registry import EXTRACTOR_REGISTRY, TRANSFORMER_REGISTRY
 
 class PipeFactory:
     @staticmethod
-    def get_extractor(e_type: str, params: dict):
-        mapping = {
-            "gecko": lambda: GeckoExtractor(**params),
-            "nbp": lambda: NBPExtractor(**params),
-            "yahoo": lambda: YahooETF(**params)
-        }
-        return mapping[e_type]()
+    def get_extractor(e_type: str, params: dict = None):
+        print(f"DEBUG: Szukam ekstraktora: '{e_type}'")
+        print(f"DEBUG: Dostępne w rejestrze: {list(EXTRACTOR_REGISTRY.keys())}")
+        
+        cls = EXTRACTOR_REGISTRY.get(e_type)
+        if not cls:
+            raise ValueError(f"Unknown extractor: {e_type}. Check if decorated with @register_extractor")
+        return cls(**params)
     
     @staticmethod
     def get_transformer(t_type: str, params: dict = None):
-        mapping = {
-            "gecko": lambda: GeckoTransformer(),
-            "nbp": lambda: NBPTransformer(),
-            "yahoo": lambda: YahooTransformer(),
-        }
-        return mapping[t_type]()
+        cls = TRANSFORMER_REGISTRY.get(t_type)
+        if not cls:
+            raise ValueError(f"Unknown transformer type: {t_type}")
+        return cls()
+    
+

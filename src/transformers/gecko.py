@@ -1,4 +1,6 @@
 import polars as pl
+from src.registry import register_transformer
+
 from src.transformers.base import BaseTransformer
 
 class GeckoTransformer(BaseTransformer):

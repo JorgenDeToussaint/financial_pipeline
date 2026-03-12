@@ -27,23 +27,31 @@ class S3Loader(BaseLoader):
         self.logger.info(f"✅ S3Loader initialized for {endpoint_url}")
 
     def save(self, data, bucket, path):
+        if data is None:
+            self.logger.warning(f"⚠️ Skipping save: Data is None for {bucket}/{path}")
+            return False
+
         try:
             obj = self.s3.Object(bucket, path)
             
-            # Bronze: 1 Fetch -> 1 JSON
             if isinstance(data, (dict, list)):
-                body = json.dumps(data)
-            # Silver: Dane przetworzone (np. Parquet jako bytes)
+                # Dodajemy ensure_ascii dla poprawnych znaków PL i indent dla czytelności Bronze
+                body = json.dumps(data, ensure_ascii=False, indent=2)
             else:
                 body = data
+                # Mały sanity check dla Silver (bytes)
+                if len(body) == 0:
+                    self.logger.error(f"❌ Attempted to save 0 bytes to {path}")
+                    return False
                 
             obj.put(Body=body)
-            self.logger.info(f"💾 File saved: {bucket}/{path}")
+            self.logger.info(f"💾 File saved: {bucket}/{path} ({len(body)} bytes)")
             return True
+        
         except Exception as e:
             self.logger.error(f"❌ Save failed: {e}")
             return False
-
+        
     def load(self, bucket, path):
         try:
             return self.s3.Object(bucket, path).get()['Body'].read()

@@ -1,5 +1,5 @@
 from .base import BaseExtractor
-from .registry import register_extractor
+from src.registry import register_extractor
 
 @register_extractor("nbp")
 class NBPExtractor(BaseExtractor):
