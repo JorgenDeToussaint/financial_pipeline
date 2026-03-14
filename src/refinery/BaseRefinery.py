@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import duckdb
-import os
+import io
 from datetime import datetime
 from src.utils.logger import get_logger
 
@@ -41,8 +41,14 @@ class BaseRefinery(ABC):
         pass
 
     def _save_to_gold(self, df, date: datetime):
-        path = f"data/gold/report={self.name}/year={date.year}/month={date.month:02d}/day={date.day:02d}/"
-        os.makedirs(path, exist_ok=True)
-        file_path = f"{path}data_{date.strftime('%H%M')}.parquet"
-        df.write_parquet(file_path)
-        self.logger.info(f"💾 Wynik zapisany w: {file_path}")
+# W _save_to_gold — stała nazwa:
+        path = f"report={self.name}/year={date.year}/month={date.month:02d}/day={date.day:02d}/data_daily.parquet"    
+        buffer = io.BytesIO()
+        df.write_parquet(buffer)
+    
+        self.s3.save(
+            data=buffer.getvalue(),
+            bucket="gold",
+            path=path
+        )
+        self.logger.info(f"💾 Gold saved: gold/{path}")

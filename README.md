@@ -6,8 +6,7 @@ A modular, fault-tolerant pipeline aggregating financial data from multiple sour
 
 ## 📸 Pipeline in Action
 
-<!-- SCREENSHOT: full async pipeline run — log output showing concurrent Bronze → Silver across all sources -->
-
+![alt text](image-1.png)
 ---
 
 ## 🏗️ Architecture
@@ -89,7 +88,7 @@ The `createbuckets` service automatically provisions `bronze` and `silver` bucke
 
 ### docker-compose stack
 
-<!-- SCREENSHOT: docker-compose up — three services starting (minio, createbuckets, app) -->
+![alt text](image-2.png)
 
 | Service | Role |
 |---------|------|
@@ -167,7 +166,7 @@ No changes to existing code required.
 
 ## 🗄️ MinIO Storage
 
-<!-- SCREENSHOT: MinIO console — bucket view showing bronze/ and silver/ with Hive partitions -->
+![alt text](image.png)
 
 Data is stored in Hive-partitioned layout, compatible with Athena, Spark, and DuckDB glob reads:
 
@@ -213,11 +212,12 @@ Reconciliation failure raises `DataIntegrityError` — no corrupted data reaches
 - [x] Hierarchical logging with `RotatingFileHandler`
 - [x] Pydantic config validation (`AppConfig` / `PipeConfig`)
 - [x] `EXTRACTOR_REGISTRY` — auto-discovery via `@register_extractor` decorator
+- [x] `TRANSFORMER_REGISTRY` — auto-discovery analogous to extractors
+
 
 ### 🔧 In Progress
 - [ ] Gold layer — `ValuationRefinery` with DuckDB views, joined instruments, FX normalization
 - [ ] Smart Checkpointing — replay transform from Bronze if Silver missing, without re-fetching API
-- [ ] `TRANSFORMER_REGISTRY` — auto-discovery analogous to extractors
 - [ ] Reconciliation check in `_verify_dependencies` (`Balance_initial + ΣInflows − ΣOutflows = Balance_final`)
 - [ ] pytest suite — `BaseTransformer`, `S3Loader`, `validate()`
 
