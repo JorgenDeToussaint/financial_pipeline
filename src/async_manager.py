@@ -6,6 +6,7 @@ from src.factories.pipe_factory import PipeFactory
 from src.utils.logger import get_logger
 from src.utils.path_manager import PathManager
 from src.loaders.S3Loader import S3Loader
+from src.refinery.ValuationRefinery import ValuationRefinery
 
 class AsyncManager:
     def __init__(self, app_config):
@@ -22,7 +23,6 @@ class AsyncManager:
                     self.logger.error(f"Unknown extractor: {pipe.extractor_type}")
                     return
 
-                # Mapujemy klucze z YAML na parametry w kodzie
                 mapping = {
                     "categories": "category",
                     "tickers": "ticker",
@@ -31,14 +31,13 @@ class AsyncManager:
                 }
 
                 params = pipe.params.copy()
-                # Szukamy co w YAML jest listą
                 loop_key = next((k for k in mapping.keys() if k in params), None)
                 items = params.pop(loop_key, [None]) if loop_key else [None]
                 singular_key = mapping.get(loop_key)
 
                 for item in items:
                     current_params = params.copy()
-                    
+
                     if item:
                         current_params[singular_key] = item
                         display_id = f"{pipe.id}_{item}"
@@ -47,31 +46,22 @@ class AsyncManager:
 
                     self.logger.info(f"🚀 [Task: {display_id}] Start")
 
-                    # Inicjalizacja komponentu
                     if pipe.extractor_type == "gecko":
-                        # FIX dla Gecko: musi być waluta, inaczej 422
                         if "vs_currency" not in current_params:
                             current_params["vs_currency"] = "usd"
-                        # Poprawka: zamiana 'per page' na 'per_page' (bo YAML ma spację)
-                        if "per page" in current_params:
-                            current_params["per_page"] = current_params.pop("per page")
-                            
                         extractor = extractor_cls(params=current_params)
                     else:
                         extractor = extractor_cls(**current_params)
 
                     transformer = PipeFactory.get_transformer(pipe.transformer_type, current_params)
 
-                    # --- PROCES ---
                     raw_data = await extractor.fetch(session)
                     if not raw_data:
                         continue
 
-                    # Zapis Bronze (4 osobne pliki dzięki display_id)
                     bronze_path = PathManager.get_path("bronze", display_id, now, "json", pipe.granularity)
                     self.s3.save(data=raw_data, bucket="bronze", path=bronze_path)
 
-                    # Zapis Silver
                     silver_data = transformer.transform(raw_data)
                     if silver_data is not None:
                         silver_path = PathManager.get_path("silver", display_id, now, "parquet", pipe.granularity)
@@ -84,6 +74,16 @@ class AsyncManager:
 
     async def run_all(self):
         now = datetime.now()
+        date_str = now.strftime("%Y-%m-%d")
         async with aiohttp.ClientSession() as session:
             tasks = [self._process_pipe(session, pipe, now) for pipe in self.config.pipes]
-            await asyncio.gather(*tasks)
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+            self.logger.info(f"🏆 Start Gold Layer Processing for {date_str}")
+
+            try:
+                refinery = ValuationRefinery(config=self.config, s3_client=self.s3)
+                refinery.run(now)
+                self.logger.info("✅ Pipeline End-to-End Success!")
+            except Exception as e:
+                self.logger.error(f"❌ Gold Layer failed: {e}")

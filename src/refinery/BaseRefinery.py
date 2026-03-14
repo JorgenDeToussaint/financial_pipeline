@@ -5,8 +5,9 @@ from datetime import datetime
 from src.utils.logger import get_logger
 
 class BaseRefinery(ABC):
-    def __init__(self, name: str, s3_client):
+    def __init__(self, name: str, config, s3_client):
         self.name = name
+        self.config = config
         self.s3 = s3_client
         self.logger = get_logger(f"refinery.{name}")
 

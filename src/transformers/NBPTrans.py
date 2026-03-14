@@ -11,8 +11,8 @@ class NBPTransformer(BaseTransformer):
         try:
             if not data or not isinstance(data, list):
                 self.logger.warning("Invalid NBP payload format")
-                return pl.DataFrame
-            
+                return pl.DataFrame()
+
             payload = data[0]
             effective_date = payload.get("effectiveDate")
             rates = payload.get("rates", [])
@@ -20,7 +20,7 @@ class NBPTransformer(BaseTransformer):
             if not rates:
                 self.logger.warning("No rates found in NBP payload.")
                 return pl.DataFrame()
-            
+
             df_clean = (
                 pl.DataFrame(rates)
                 .with_columns([
@@ -31,7 +31,7 @@ class NBPTransformer(BaseTransformer):
             )
 
             return df_clean
-        
+
         except Exception as e:
             self.logger.error(f"NBP Parsing failed: {e}")
             return pl.DataFrame()
