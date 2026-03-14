@@ -13,25 +13,29 @@ class NBPTransformer(BaseTransformer):
                 self.logger.warning("Invalid NBP payload format")
                 return pl.DataFrame()
 
-            payload = data[0]
-            effective_date = payload.get("effectiveDate")
-            rates = payload.get("rates", [])
+            frames = []
+            for payload in data:
+                effective_date = payload.get("effectiveDate")
+                rates = payload.get("rates", [])
+                if not rates:
+                    continue
 
-            if not rates:
+                df = (
+                    pl.DataFrame(rates)
+                    .with_columns([
+                        pl.lit(effective_date).str.to_date("%Y-%m-%d").alias("date"),
+                        pl.col("mid").cast(pl.Float64)
+                    ])
+                    .select(["date", "code", "mid"])
+                )
+                frames.append(df)
+
+            if not frames:
                 self.logger.warning("No rates found in NBP payload.")
                 return pl.DataFrame()
 
-            df_clean = (
-                pl.DataFrame(rates)
-                .with_columns([
-                    pl.lit(effective_date).str.to_date("%Y-%m-%d").alias("date"),
-                    pl.col("mid").cast(pl.Float64)
-                ])
-                .select(["date", "code", "mid"])
-            )
-
-            return df_clean
+            return pl.concat(frames)
 
         except Exception as e:
             self.logger.error(f"NBP Parsing failed: {e}")
-            return pl.DataFrame()
+        return pl.DataFrame()

@@ -14,13 +14,6 @@ pipes:
     concurency_limit: 2
     granularity: hourly
 
-  - id: nbp_exchange_rates
-    extractor_type: nbp
-    transformer_type: nbp
-    params:
-      tables: [A, B]
-    granularity: daily
-
   - id: yahoo_finance_primary
     extractor_type: yahoo
     transformer_type: yahoo
@@ -28,3 +21,11 @@ pipes:
       tickers: ["SPY", "BRK-B", "7203.T", "GC=F", "^GSPC"]
     concurency_limit: 3
     granularity: hourly
+
+  - id: nbp_exchange_rates
+    extractor_type: nbp
+    transformer_type: nbp
+    params:
+      tables: [A]
+      last: 60
+    granularity: daily
