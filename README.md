@@ -6,7 +6,7 @@ A modular, fault-tolerant pipeline aggregating financial data from multiple sour
 
 ## 📸 Pipeline in Action
 
-![alt text](image-1.png)
+![alt text](docs/screenshots/image-1.png)
 ---
 
 ## 🏗️ Architecture
@@ -88,7 +88,7 @@ The `createbuckets` service automatically provisions `bronze` and `silver` bucke
 
 ### docker-compose stack
 
-![alt text](image-2.png)
+![alt text](docs/screenshots/image-1.pngimage-2.png)
 
 | Service | Role |
 |---------|------|
@@ -166,7 +166,7 @@ No changes to existing code required.
 
 ## 🗄️ MinIO Storage
 
-![alt text](image.png)
+![alt text](docs/screenshots/image.png)
 
 Data is stored in Hive-partitioned layout, compatible with Athena, Spark, and DuckDB glob reads:
 
@@ -211,25 +211,27 @@ Reconciliation failure raises `DataIntegrityError` — no corrupted data reaches
 - [x] MinIO readiness probe with retry logic
 - [x] Hierarchical logging with `RotatingFileHandler`
 - [x] Pydantic config validation (`AppConfig` / `PipeConfig`)
-- [x] `EXTRACTOR_REGISTRY` — auto-discovery via `@register_extractor` decorator
-- [x] `TRANSFORMER_REGISTRY` — auto-discovery analogous to extractors
-
+- [x] `EXTRACTOR_REGISTRY` + `TRANSFORMER_REGISTRY` — auto-discovery via decorators
+- [x] Gold layer — `ValuationRefinery` with DuckDB ASOF JOIN and FX normalization
+- [x] Smart Checkpointing — idempotent pipeline runs
+- [x] `ViewBuilder` — config-driven analytical views from Gold OBT
+- [x] 40+ instruments across defense, commodities, semiconductors, crypto, indices
 
 ### 🔧 In Progress
-- [ ] Gold layer — `ValuationRefinery` with DuckDB views, joined instruments, FX normalization
-- [ ] Smart Checkpointing — replay transform from Bronze if Silver missing, without re-fetching API
-- [ ] Reconciliation check in `_verify_dependencies` (`Balance_initial + ΣInflows − ΣOutflows = Balance_final`)
-- [ ] pytest suite — `BaseTransformer`, `S3Loader`, `validate()`
+- [ ] Streamlit dashboard — consumes `gold/views/`, interactive charts
+- [ ] pytest suite — BaseTransformer, GeckoTransformer, S3Loader
 
 ### 📋 Backlog
-- [ ] Per-source semaphore limits (currently global `Semaphore(3)`)
+- [ ] Historical backfill — replay pipeline for date ranges
+- [ ] Per-source semaphore limits (currently global)
 - [ ] `asyncio.wait_for()` per-task timeout
-- [ ] `asyncio.gather(return_exceptions=True)` with explicit error handling
-- [ ] Prefect or GitHub Actions as pipeline scheduler
+- [ ] Snake_case filename refactor
 
 ### 🚀 Future
+- [ ] Prefect or GitHub Actions — pipeline scheduler
 - [ ] AWS deployment — Lambda + S3 + Athena
-- [ ] Terraform IaC for cloud infrastructure
+- [ ] Terraform IaC
+- [ ] ML feature store — volatility signals, correlation matrix
 
 ---
 
