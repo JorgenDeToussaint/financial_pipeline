@@ -8,10 +8,28 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### In Progress
-- Smart Checkpointing — replay transform from Bronze without re-fetching API
 - pytest suite — `BaseTransformer`, `S3Loader`, `validate()`
 
 ---
+## [1.2.0] — view-builder — 2026-03-15
+
+### Added
+- `ViewBuilder` — config-driven analytical views from Gold OBT
+- `config/views.yaml` — declarative view definitions (tickers, source, or all)
+- 6 views: `macro_overview`, `defense_tracker`, `commodities`, `semiconductors`, `crypto_defi`, `full_universe`
+- Smart Checkpointing in `AsyncManager` — skips Silver fetch if partition exists
+- New tickers: defense, semiconductors, shipping, uranium, commodities (40+ instruments)
+
+### Changed
+- Gold OBT simplified — window functions moved to ViewBuilder layer
+- `_verify_dependencies` tolerates ±1h for rate-limited sources
+- Per-item semaphore in `AsyncManager` — better concurrency
+- `union_by_name=True` in ViewBuilder — handles schema evolution across Gold partitions
+
+### Fixed
+- Gold layer saves to MinIO instead of local filesystem
+- `data_daily.parquet` static filename — upsert on rerun, no duplicates
+
 ## [1.1.0] — gold-layer — 2026-03-14
 
 ### Added
