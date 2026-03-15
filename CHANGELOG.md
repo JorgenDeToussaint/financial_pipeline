@@ -8,9 +8,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### In Progress
-- pytest suite — `BaseTransformer`, `S3Loader`, `validate()`
+- Historical backfill — replay pipeline for date ranges
 
 ---
+
+## [1.3.0] — tests-and-refactor — 2026-03-15
+
+### Added
+- pytest suite — 18 tests across BaseTransformer, GeckoTransformer, S3Loader
+- `tests/transformers/test_base_transformer.py` — validate() and transform() edge cases
+- `tests/transformers/test_gecko_transformer.py` — schema, uppercase ticker, invalid payload
+- `tests/loaders/test_s3_loader.py` — save/exists/load with mocked boto3
+- Streamlit dashboard — price charts, volatility ranking, returns 24h, PLN normalization
+- Interactive view selector: macro, defense, commodities, semiconductors, crypto, full universe
+
+### Changed
+- Snake_case filenames: `S3Loader.py` → `s3_loader.py`, `BaseRefinery.py` → `base_refinery.py`, `ValuationRefinery.py` → `valuation_refinery.py`, `NBPTrans.py` → `nbp_transformer.py`
+- GeckoTransformer i128 overflow fix — extended schema_overrides to all large numeric columns
+
 ## [1.2.0] — view-builder — 2026-03-15
 
 ### Added
