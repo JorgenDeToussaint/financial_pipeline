@@ -25,14 +25,14 @@ class BaseTransformer(ABC):
         if null_count > (df.height * df.width * 0.5):
             self.logger.error(f"❌ Validation Failed: Too many nulls ({null_count})")
             return False
-        
+
         return True
 
     def transform(self, raw_data: any) -> bytes | None:
         if raw_data is None:
             self.logger.error("Empty payload recieved")
             return None
-        
+
         try:
             if isinstance(raw_data, (bytes, str)):
                 data = json.loads(raw_data)
@@ -43,11 +43,11 @@ class BaseTransformer(ABC):
 
             if not self.validate(df):
                 return None
-            
+
             buffer = io.BytesIO()
             df.write_parquet(file=buffer)
             return buffer.getvalue()
-        
+
         except Exception as e:
             self.logger.error(f"❌ Transformation failed for {self.name}: {e}")
             return None

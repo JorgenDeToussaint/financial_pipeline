@@ -1,6 +1,7 @@
 import time
 from contextlib import contextmanager
 
+
 @contextmanager
 def execution_timer(name: str, logger):
     start_time = time.perf_counter()

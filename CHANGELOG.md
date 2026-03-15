@@ -8,12 +8,33 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### In Progress
-- Gold layer — `ValuationRefinery` with DuckDB views and FX normalization
 - Smart Checkpointing — replay transform from Bronze without re-fetching API
-- `TRANSFORMER_REGISTRY` — auto-discovery analogous to extractors
 - pytest suite — `BaseTransformer`, `S3Loader`, `validate()`
 
 ---
+## [1.1.0] — gold-layer — 2026-03-14
+
+### Added
+- Gold layer — `ValuationRefinery` with DuckDB ASOF JOIN and FX normalization
+- One Big Table (OBT) with return_1h, return_24h, volume_ma_24h, volatility_24h
+- NBP historical backfill (last 60 trading days)
+- Streamlit service in docker-compose (placeholder)
+- `gold` bucket provisioned in createbuckets
+
+### Fixed
+- BaseRefinery contract: config param missing from __init__
+- ValuationRefinery.transform() signature mismatch
+- ASOF JOIN: cast NBP date to TIMESTAMP
+- Window functions: split into with_returns CTE (nested window error)
+- S3 path double-prefix bug in _verify_dependencies
+- pl.DataFrame missing () in NBPTrans
+- price_usd cast to Float64 in GeckoTransformer
+- asyncio removed from requirements.txt
+
+### Changed
+- Gold layer saves to MinIO instead of local filesystem
+- Gold layer uses static data_daily.parquet filename (upsert on rerun)
+- NBPTransformer handles multi-day historical payload
 
 ## [1.0.0] — modular-sync — 2025
 

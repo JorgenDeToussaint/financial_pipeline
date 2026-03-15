@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class BaseLoader(ABC):
     @abstractmethod
     def save(self, data, bucket: str, path: str) -> bool:

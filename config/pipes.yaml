@@ -9,17 +9,74 @@ pipes:
         - decentralized-finance-defi
         - layer-1
         - smart-contract-platform
-      per page: 250
+      per_page: 250
       order: market_cap_desc
-    concurency_limit: 2
+    concurency_limit: 1
     granularity: hourly
 
   - id: yahoo_finance_primary
     extractor_type: yahoo
     transformer_type: yahoo
     params:
-      tickers: ["SPY", "BRK-B", "7203.T", "GC=F", "^GSPC"]
-    concurency_limit: 3
+      range: "1mo"
+      interval: "1d"
+      tickers:
+        # --- Core & Indices ---
+        - "^GSPC"      # S&P 500
+        - "SPY"        # ETF na S&P 500
+        - "BRK-B"      # Berkshire Hathaway
+        - "7203.T"     # Toyota (Test JPY/Waluty)
+        
+        # --- Defense & Aerospace ---
+        - "ITA"        # iShares US Aerospace & Defense
+        - "PPA"        # Invesco Aerospace & Defense
+        - "XAR"        # SPDR S&P Aerospace & Defense
+        - "LMT"        # Lockheed Martin
+        - "BA"         # Boeing
+        - "RTX"        # Raytheon (RTX Corp)
+        - "NOC"        # Northrop Grumman
+        - "GD"         # General Dynamics
+        - "RHM.DE"     # Rheinmetall (Niemcy - EUR)
+        - "KTOS"       # Kratos Defense
+        
+        # --- Gold & Mining ---
+        - "GC=F"       # Kontrakty na Złoto
+        - "GDXJ"       # Junior Gold Miners ETF
+        - "GDX"        # Gold Miners ETF
+        - "NEM"        # Newmont (Gigant wydobywczy)
+        - "GOLD"       # Barrick Gold
+        - "PAAS"       # Pan American Silver
+        
+        # --- Surowce & Energetyka ---
+        - "GLD"        # SPDR Gold Shares
+        - "USO"        # United States Oil Fund (Ropa)
+        - "DBC"        # Invesco DB Commodity Index
+        - "PKN.WA"     # Orlen (Polska - PLN)
+        - "KGH.WA"     # KGHM (Miedź - PLN)
+        - "XOM"        # Exxon Mobil
+        - "BHP"        # BHP Group (Surowce)
+        - "RIO"        # Rio Tinto
+        - "VALE"       # Wydobycie rudy żelaza
+        - "CL=F"       # Kontrakty na Ropę WTI
+
+        # --- Semiconductors & AI (The Brains) ---
+        - "NVDA"       # Nvidia
+        - "TSM"        # TSMC (Tajwan - USD)
+        - "ASML"       # ASML (Holandia - Tech litograficzny)
+        - "AMD"        # AMD
+        - "INTC"
+        # --- Shipping & Logistics (Global Trade) ---
+        - "ZIM"        # ZIM Integrated Shipping
+        - "MAERSK-B.CO" # Maersk (Dania - DKK) - kolejny test walutowy!
+        
+        # --- Uranium & Nuclear (Energy Defense) ---
+        - "CCJ"        # Cameco (Uran)
+        - "URA"        # Global X Uranium ETF
+        
+        # --- Indeksy & Zmienność ---
+        - "^VIX"       # Indeks strachu (zmienność S&P 500)
+        - "DX-Y.NYB"   # US Dollar Index (Siła dolara)
+    concurency_limit: 5
     granularity: hourly
 
   - id: nbp_exchange_rates

@@ -4,6 +4,7 @@ import io
 from datetime import datetime
 from src.utils.logger import get_logger
 
+
 class BaseRefinery(ABC):
     def __init__(self, name: str, config, s3_client):
         self.name = name
@@ -32,23 +33,19 @@ class BaseRefinery(ABC):
 
     @abstractmethod
     def _verify_dependencies(self, date: datetime):
-        #individual circut breaker
+        # individual circut breaker
         pass
 
     @abstractmethod
     def transform(self, conn, date: datetime):
-        #There goes SQL querry
+        # There goes SQL querry
         pass
 
     def _save_to_gold(self, df, date: datetime):
-# W _save_to_gold — stała nazwa:
-        path = f"report={self.name}/year={date.year}/month={date.month:02d}/day={date.day:02d}/data_daily.parquet"    
+        # W _save_to_gold — stała nazwa:
+        path = f"report={self.name}/year={date.year}/month={date.month:02d}/day={date.day:02d}/data_daily.parquet"
         buffer = io.BytesIO()
         df.write_parquet(buffer)
-    
-        self.s3.save(
-            data=buffer.getvalue(),
-            bucket="gold",
-            path=path
-        )
+
+        self.s3.save(data=buffer.getvalue(), bucket="gold", path=path)
         self.logger.info(f"💾 Gold saved: gold/{path}")

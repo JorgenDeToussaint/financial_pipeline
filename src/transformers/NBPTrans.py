@@ -2,6 +2,7 @@ import polars as pl
 from src.transformers.base import BaseTransformer
 from src.registry import register_transformer
 
+
 @register_transformer("nbp")
 class NBPTransformer(BaseTransformer):
     def __init__(self):
@@ -22,10 +23,14 @@ class NBPTransformer(BaseTransformer):
 
                 df = (
                     pl.DataFrame(rates)
-                    .with_columns([
-                        pl.lit(effective_date).str.to_date("%Y-%m-%d").alias("date"),
-                        pl.col("mid").cast(pl.Float64)
-                    ])
+                    .with_columns(
+                        [
+                            pl.lit(effective_date)
+                            .str.to_date("%Y-%m-%d")
+                            .alias("date"),
+                            pl.col("mid").cast(pl.Float64),
+                        ]
+                    )
                     .select(["date", "code", "mid"])
                 )
                 frames.append(df)

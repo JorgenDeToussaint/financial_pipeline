@@ -1,0 +1,23 @@
+views:
+  - id: macro_overview
+    filter_type: tickers
+    tickers: ["^GSPC", "SPY", "BRK-B", "^VIX", "DX-Y.NYB", "7203.T"]
+
+  - id: defense_tracker
+    filter_type: tickers
+    tickers: ["ITA", "PPA", "XAR", "LMT", "BA", "RTX", "NOC", "GD", "RHM.DE", "KTOS"]
+
+  - id: commodities
+    filter_type: tickers
+    tickers: ["GC=F", "CL=F", "GLD", "USO", "DBC", "GDX", "GDXJ", "NEM", "GOLD", "PAAS", "XOM", "BHP", "RIO", "VALE", "PKN.WA", "KGH.WA", "CCJ", "URA"]
+
+  - id: semiconductors
+    filter_type: tickers
+    tickers: ["NVDA", "TSM", "ASML", "AMD", "INTC"]
+
+  - id: crypto_defi
+    filter_type: source
+    source: gecko
+
+  - id: full_universe
+    filter_type: all
