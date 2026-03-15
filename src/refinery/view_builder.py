@@ -3,7 +3,7 @@ import io
 import yaml
 import duckdb
 from src.utils.logger import get_logger
-from src.loaders.S3Loader import S3Loader
+from src.loaders.s3_loader import S3Loader
 
 
 class ViewBuilder:

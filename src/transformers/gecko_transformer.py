@@ -14,10 +14,18 @@ class GeckoTransformer(BaseTransformer):
                 self.logger.warning("Invalid Gecko payload format.")
                 return pl.DataFrame()
 
-            overrides = {"market_cap": pl.Float64, "total_volume": pl.Float64}
-
-            df = pl.from_dicts(data, schema_overrides=overrides)
-
+            overrides = {
+                "market_cap": pl.Float64,
+                "total_volume": pl.Float64,
+                "circulating_supply": pl.Float64,
+                "total_supply": pl.Float64,
+                "max_supply": pl.Float64,
+                "fully_diluted_valuation": pl.Float64,
+            }
+            
+            df = pl.from_dicts(
+                data, schema_overrides=overrides, infer_schema_length=None
+            )
             df_clean = (
                 df.select(
                     [

@@ -5,8 +5,8 @@ from src.registry import EXTRACTOR_REGISTRY, TRANSFORMER_REGISTRY
 from src.factories.pipe_factory import PipeFactory
 from src.utils.logger import get_logger
 from src.utils.path_manager import PathManager
-from src.loaders.S3Loader import S3Loader
-from src.refinery.ValuationRefinery import ValuationRefinery
+from src.loaders.s3_loader import S3Loader
+from src.refinery.valuation_refinery import ValuationRefinery
 from src.refinery.view_builder import ViewBuilder
 
 

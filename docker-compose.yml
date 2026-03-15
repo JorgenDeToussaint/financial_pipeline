@@ -11,7 +11,7 @@ services:
     env_file:
       - .env                     
     working_dir: /app
-    command: python main.py
+    command: /bin/bash /app/run.sh
     environment:
       - PYTHONPATH=/app
       - S3_ENDPOINT=http://minio:9000
@@ -44,7 +44,7 @@ services:
     depends_on:
       createbuckets:
         condition: service_completed_successfully
-    restart: no
+    restart: unless-stopped
 
   minio:
     image: minio/minio

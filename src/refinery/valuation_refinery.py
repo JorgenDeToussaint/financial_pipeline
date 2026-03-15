@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta
-from src.refinery.BaseRefinery import BaseRefinery
+from src.refinery.base_refinery import BaseRefinery
 from src.exceptions.transformers import DataIntegrityError
 
 
