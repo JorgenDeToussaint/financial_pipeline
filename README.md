@@ -1,6 +1,5 @@
 # 🌊 Financial Data Lakehouse Engine
 
-<<<<<<< HEAD
 ## 🎯 Mission
 A resilient, modular data infrastructure designed to eliminate "manual guesswork" in financial analysis. This project is built as a **scalable "Data Hydraulics" system**, prioritizing fault tolerance, cost-efficiency (FinOps), and high-performance analytical processing.
 
