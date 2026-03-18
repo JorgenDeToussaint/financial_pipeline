@@ -1,5 +1,9 @@
 from abc import ABC, abstractmethod
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> development
 class BaseLoader(ABC):
     @abstractmethod
     def save(self, data, bucket: str, path: str) -> bool:
@@ -11,4 +15,8 @@ class BaseLoader(ABC):
 
     @abstractmethod
     def exists(self, bucket: str, path: str) -> bool:
+<<<<<<< HEAD
         pass
+=======
+        pass
+>>>>>>> development

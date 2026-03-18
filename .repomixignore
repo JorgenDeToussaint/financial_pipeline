@@ -1,0 +1,29 @@
+# Data storaged
+bronze/
+silver/
+gold/
+storage/
+data/
+*.parquet
+*.json
+*.csv
+
+# Enviornment
+venv/
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+.docker/
+
+# Secret
+.env
+*.pem
+*.key
+
+# Git and the dump
+.git/
+.gitignore
+.vscode/
+.DS_Store
+repomix-output.md

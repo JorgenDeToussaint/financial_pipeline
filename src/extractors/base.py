@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from abc import ABC, abstractmethod
 from src.utils.logger import get_logger
 import requests
@@ -6,12 +7,34 @@ class BaseExtractor(ABC):
     def __init__(self, name:str, base_url: str):
         self.name = name
         self.base_url = base_url
+=======
+import asyncio
+import aiohttp
+import random
+from abc import ABC, abstractmethod
+from src.utils.logger import get_logger
+from src.exceptions.extractors import (
+    RateLimitError,
+    AuthError,
+    ServerError,
+    ExtractorError,
+)
+from src.utils.timer import execution_timer
+
+
+class BaseExtractor(ABC):
+    def __init__(self, name: str, base_url: str, timeout: int = 30):
+        self.name = name
+        self.base_url = base_url
+        self.timeout = timeout
+>>>>>>> development
         self.logger = get_logger(f"extractor.{name}")
 
     @abstractmethod
     def get_params(self) -> dict:
         pass
 
+<<<<<<< HEAD
     def fetch(self) -> list:
         self.logger.info(f"🚀 Start: {self.base_url}")
         try:
@@ -24,3 +47,76 @@ class BaseExtractor(ABC):
         except Exception as e:
             self.logger.error(f"❌ Connection failed: {e}")
             return []
+=======
+    def get_headers(self) -> dict:
+        return {}
+
+    async def _check_status(self, response: aiohttp.ClientResponse):
+        status = response.status
+        if status == 200:
+            return
+
+        if status == 429:
+            # Pobieramy Retry-After, jeśli API go podaje
+            retry_after = response.headers.get("Retry-After")
+            self.logger.warning(
+                f"🛑 Rate Limit hit (429). Serwer sugeruje: {retry_after}s"
+            )
+            raise RateLimitError(retry_after=retry_after)
+
+        if status in [401, 403]:
+            raise AuthError(f"Access Denied: {status}")
+
+        if status >= 500:
+            raise ServerError(f"API Server Error: {status}")
+
+        raise ExtractorError(f"Unexpected status: {status}")
+
+    async def fetch(self, session: aiohttp.ClientSession) -> list:
+        max_retries = 3
+        # Twoje zapobiegawcze 70 sekund (minuta + margines błędu)
+        safe_wait = 70
+
+        with execution_timer(self.name, self.logger):
+            for attempt in range(max_retries):
+                try:
+                    self.logger.info(
+                        f"🚀 Inicjacja pobierania: {self.base_url} (Próba {attempt + 1})"
+                    )
+                    async with session.get(
+                        self.base_url,
+                        params=self.get_params(),
+                        headers=self.get_headers(),
+                        timeout=aiohttp.ClientTimeout(total=self.timeout),
+                    ) as response:
+                        await self._check_status(response)
+                        data = await response.json()
+
+                        count = len(data) if isinstance(data, list) else 1
+                        self.logger.info(f"✅ Sukces: Pobrano {count} rekordów.")
+                        return data
+
+                except RateLimitError as e:
+                    # Wybieramy dłuższą wartość: to co chce serwer ALBO Twoje bezpieczne 70s
+                    wait_time = max(int(e.retry_after or 0), safe_wait)
+                    # Dodajemy minimalny jitter (0-3s), żeby asynchroniczne rury nie ruszyły idealnie naraz
+                    actual_wait = wait_time + random.uniform(0, 3)
+
+                    self.logger.warning(
+                        f"⏳ [429] Prewencyjne czekanie: {actual_wait:.1f}s..."
+                    )
+                    await asyncio.sleep(actual_wait)
+                    if attempt == max_retries - 1:
+                        raise
+
+                except (ServerError, asyncio.TimeoutError):
+                    if attempt == max_retries - 1:
+                        raise
+                    await asyncio.sleep(5 * (attempt + 1))
+
+                except Exception as e:
+                    self.logger.error(f"❌ Błąd w {self.name}: {str(e)}")
+                    raise ExtractorError(f"Connection failed: {e}")
+
+            return []
+>>>>>>> development

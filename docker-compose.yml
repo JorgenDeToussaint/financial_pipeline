@@ -11,12 +11,50 @@ services:
     env_file:
       - .env                     
     working_dir: /app
+<<<<<<< HEAD
     command: python main.py
     environment:
       - PYTHONPATH=/app
     stdin_open: true 
     tty: true
 
+=======
+    command: /bin/bash /app/run.sh
+    environment:
+      - PYTHONPATH=/app
+      - S3_ENDPOINT=http://minio:9000
+      - S3_ACCESS_KEY=${MINIO_USER}
+      - S3_SECRET_KEY=${MINIO_PASSWORD}
+    depends_on:
+      createbuckets:
+        condition: service_completed_successfully
+    stdin_open: true 
+    tty: true
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - .:/app:z
+      - ./config:/app/config:z
+    env_file:
+      - .env
+    working_dir: /app
+    command: streamlit run dashboard/app.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8502:8501"
+    environment:
+      - PYTHONPATH=/app
+      - S3_ENDPOINT=http://minio:9000
+      - S3_ACCESS_KEY=${MINIO_USER}
+      - S3_SECRET_KEY=${MINIO_PASSWORD}
+    depends_on:
+      createbuckets:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+>>>>>>> development
   minio:
     image: minio/minio
     container_name: minio_storage
@@ -31,18 +69,38 @@ services:
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
+<<<<<<< HEAD
+=======
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+>>>>>>> development
 
   createbuckets:
     image: minio/mc
     depends_on:
+<<<<<<< HEAD
       - minio
+=======
+      minio:
+        condition: service_healthy
+>>>>>>> development
     env_file:
       - .env                    
     entrypoint: >
       /bin/sh -c "
+<<<<<<< HEAD
       until (/usr/bin/mc alias set local_minio http://minio:9000 $MINIO_USER $MINIO_PASSWORD) do echo 'Waiting for MinIO...' && sleep 1; done;
       /usr/bin/mc mb --ignore-existing local_minio/bronze;
       /usr/bin/mc mb --ignore-existing local_minio/silver;
+=======
+      /usr/bin/mc alias set local_minio http://minio:9000 $MINIO_USER $MINIO_PASSWORD;
+      /usr/bin/mc mb --ignore-existing local_minio/bronze;
+      /usr/bin/mc mb --ignore-existing local_minio/silver;
+      /usr/bin/mc mb --ignore-existing local_minio/gold;
+>>>>>>> development
       exit 0;
       "
 

@@ -3,6 +3,10 @@ import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> development
 def get_logger(name: str):
     log_dir = Path("logs")
     log_dir.mkdir(exist_ok=True)
@@ -11,32 +15,56 @@ def get_logger(name: str):
 
     if logger.hasHandlers():
         return logger
+<<<<<<< HEAD
     
+=======
+>>>>>>> development
 
     logger.setLevel(logging.DEBUG)
 
     formatter = logging.Formatter(
         "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+<<<<<<< HEAD
         datefmt="%Y-%m-%d %H:%M:%S"
     )
 
     
+=======
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
+>>>>>>> development
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(formatter)
 
+<<<<<<< HEAD
  
     file_handler = RotatingFileHandler(
         log_dir / "pipeline.log",
         maxBytes=5*1024*1024,
         backupCount=3,
         encoding='utf-8'
+=======
+    file_handler = RotatingFileHandler(
+        log_dir / "pipeline.log",
+        maxBytes=5 * 1024 * 1024,
+        backupCount=3,
+        encoding="utf-8",
+>>>>>>> development
     )
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)
 
+<<<<<<< HEAD
   
     logger.addHandler(console_handler)
     logger.addHandler(file_handler)
 
     return logger
+=======
+    logger.addHandler(console_handler)
+    logger.addHandler(file_handler)
+
+    return logger
+>>>>>>> development
