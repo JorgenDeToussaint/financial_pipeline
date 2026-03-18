@@ -42,7 +42,6 @@ class BaseRefinery(ABC):
         pass
 
     def _save_to_gold(self, df, date: datetime):
-        # W _save_to_gold — stała nazwa:
         path = f"report={self.name}/year={date.year}/month={date.month:02d}/day={date.day:02d}/data_daily.parquet"
         buffer = io.BytesIO()
         df.write_parquet(buffer)

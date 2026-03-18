@@ -19,13 +19,6 @@ class BaseTransformer(ABC):
             self.logger.error("Validation Failed: DataFrame is empty.")
             return False
 
-        total_nulls = df.null_count().sum_horizontal().sum()
-        null_count = sum(df.null_count().row(0))
-
-        if null_count > (df.height * df.width * 0.5):
-            self.logger.error(f"❌ Validation Failed: Too many nulls ({null_count})")
-            return False
-
         return True
 
     def transform(self, raw_data: any) -> bytes | None:
