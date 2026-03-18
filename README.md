@@ -1,9 +1,5 @@
 # 🌊 Financial Data Lakehouse Engine
 
-## 🎯 Mission
-A resilient, modular data infrastructure designed to eliminate "manual guesswork" in financial analysis. This project is built as a **scalable "Data Hydraulics" system**, prioritizing fault tolerance, cost-efficiency (FinOps), and high-performance analytical processing.
-
-I approach Data Engineering with a **"Local-first, Cloud-ready"** mindset—prototyping on a private cluster of **Thinkpad T480 nodes** (simulating S3 via MinIO) to ensure 100% architectural compatibility with AWS before deployment.
 
 ## 🏗️ Architecture: The Medallion Pattern
 The system follows the **Medallion Architecture**, ensuring data integrity at every hop:
