@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-.venv/
-__pycache__/
-*.pyc
-.git/
-.env
-data/
-logs/
-.pytest_cache/
-=======
 data/
 logs/
 __pycache__/
@@ -16,4 +6,3 @@ __pycache__/
 .env
 venv/
 .ipynb_checkpoints/
->>>>>>> development
