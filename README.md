@@ -1,4 +1,4 @@
-# 🌊 Financial Data Lakehouse Engine
+# 🌊 Financial Data lakehouse Engine
 
 A modular, fault-tolerant pipeline aggregating financial data from multiple sources into a structured, analytics-ready lakehouse. Built with a **local-first, cloud-ready** mindset — prototyped on a private ThinkPad T480 cluster with MinIO before cloud deployment.
 
@@ -258,6 +258,7 @@ s3://gold/
 - [x] 40+ instruments across defense, commodities, semiconductors, crypto, indices
 - [x] Streamlit dashboard — price charts, volatility ranking, returns, PLN normalization
 - [x] pytest suite — 18 tests, BaseTransformer, GeckoTransformer, S3Loader
+- [x] docker image optimization
 
 ### 📋 Backlog
 - [ ] Historical backfill — replay pipeline for date ranges

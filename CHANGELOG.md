@@ -1,16 +1,28 @@
 # Changelog
 
 All notable changes to this project are documented here.  
-Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+# Changelog
 
----
+All notable changes to this project will be documented in this file.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
 ### In Progress
-- Historical backfill — replay pipeline for date ranges
+- Historical backfill — implementation of idempotent replay pipeline for date ranges (S3 partitioning).
+- Airflow/Prefect integration research for orchestration.
 
 ---
+
+## [1.4.0] — docker-infra-ready — 2026-03-28
+
+### Performance
+- **Docker Image Optimization:** Refactored `Dockerfile` using multi-stage builds and optimized layer caching. Reduced final image footprint for faster deployment.
+- **Environment Parity:** Alignment of local IntelliJ Ultimate runtimes with containerized execution to eliminate "works on my machine" syndrome.
+
+### Fixed
+- **Post-Merge Cleanup:** Absolute removal of git merge artifacts (`<<<< HEAD`, etc.) and redundant temporary files.
+- **Dependency Resolution:** Fixed broken references and imports resulting from the major file renaming process.
 
 ## [1.3.0] — tests-and-refactor — 2026-03-15
 
