@@ -1,25 +1,24 @@
-# Obraz bazowy [cite: 2026-01-24]
-FROM python:3.11-slim
-
-# Ustawienia środowiska Python (brak plików .pyc, logowanie na bieżąco)
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
-
-WORKDIR /app
-
-# Instalacja zależności systemowych (jeśli będą potrzebne np. pod Postgres/Pandas)
+# STAGE 1: Builder
+FROM python:3.11-slim AS builder
+WORKDIR /install
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Cache'owanie warstwy bibliotek
+    build-essential gcc && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Kopiowanie kodu źródłowego
+FROM python:3.11-slim
+WORKDIR /app
+
+# STAGE 2: Actual Image
+COPY --from=builder /usr/local /usr/local
+
 COPY src/ ./src
 COPY main.py .
+COPY dashboard/ ./dashboard
+COPY run.sh /app/run.sh
 
-# Domyślna komenda (można nadpisać w docker-compose)
-CMD ["python", "main.py"]
+RUN chmod +x /app/run.sh
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+CMD ["/bin/bash", "/app/run.sh"]

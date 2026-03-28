@@ -8,17 +8,23 @@ from src.utils.logger import get_logger
 class S3Loader(BaseLoader):
     def __init__(
         self,
-        endpoint_url=os.getenv("S3_ENDPOINT", "http://localhost:9000"),
-        access_key=os.getenv("S3_ACCESS_KEY"),
-        secret_key=os.getenv("S3_SECRET_KEY"),
+        # Usuwamy domyślny localhost ze sygnatury, żeby wymusić branie z Env
+        endpoint_url=None, 
+        access_key=None,
+        secret_key=None,
     ):
         self.logger = get_logger("S3Loader")
 
+        # Inżynierski fallback: Env > Argument > Localhost (tylko do testów lokalnych)
+        self.endpoint_url = endpoint_url or os.getenv("S3_ENDPOINT", "http://localhost:9000")
+        self.access_key = access_key or os.getenv("S3_ACCESS_KEY")
+        self.secret_key = secret_key or os.getenv("S3_SECRET_KEY")
+
         self.s3 = boto3.resource(
             "s3",
-            endpoint_url=endpoint_url,
-            aws_access_key_id=access_key,
-            aws_secret_access_key=secret_key,
+            endpoint_url=self.endpoint_url,
+            aws_access_key_id=self.access_key,
+            aws_secret_access_key=self.secret_key,
         )
 
         self.client = self.s3.meta.client
