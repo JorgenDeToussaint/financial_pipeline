@@ -9,7 +9,6 @@ on:
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -29,12 +28,11 @@ jobs:
       - name: Run unit tests
         run: |
           pytest tests/ -v --cov=src --cov-report=term-missing
-        continue-on-error: true  
+        continue-on-error: true
 
   docker-build:
     runs-on: ubuntu-latest
     needs: unit-tests
-    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -54,42 +52,38 @@ jobs:
     runs-on: ubuntu-latest
     needs: docker-build
     if: github.ref == 'refs/heads/main'
-
     env:
       MINIO_USER: ${{ secrets.MINIO_USER }}
       MINIO_PASSWORD: ${{ secrets.MINIO_PASSWORD }}
-      NBP_API_VERSION: v1
-      LOG_LEVEL: INFO
-      ENV: production
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create .env file
+      - name: Verify Secrets Presence
         run: |
-          echo "MINIO_USER=${MINIO_USER}" >> .env
-          echo "MINIO_PASSWORD=${MINIO_PASSWORD}" >> .env
+          if [ -z "$MINIO_USER" ]; then 
+            exit 1 
+          fi
 
-      - name: Start MinIO service
+      - name: Start Infrastructure
         run: |
           docker compose up -d minio
-          echo "Waiting for MinIO..."
+          timeout 60 bash -c 'until [ "$(docker inspect -f {{.State.Health.Status}} minio_storage)" == "healthy" ]; do sleep 2; done'
+          docker compose up createbuckets
 
-      - name: Run pipeline
+      - name: Run Pipeline
         run: |
           docker compose up --build --abort-on-container-exit app
-        timeout-minutes: 15
+        timeout-minutes: 10
 
-      - name: Show pipeline logs
+      - name: Show Debug Logs
         if: always()
         run: |
-          echo "=== Application Logs ==="
           docker compose logs app
-          echo "=== MinIO Logs ==="
           docker compose logs minio
 
-      - name: Cleanup containers
+      - name: Cleanup
         if: always()
         run: |
           docker compose down -v
