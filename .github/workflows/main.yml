@@ -5,22 +5,18 @@ on: [push]
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Start Infrastructure with Docker Compose
+      - name: Setup Environment Variables
         run: |
-          export MINIO_USER=${{ secrets.MINIO_USER }}
-          export MINIO_PASSWORD=${{ secrets.MINIO_PASSWORD }}
-        
-          docker-compose up -d minio createbuckets
-        
-          docker wait financial_pipeline-createbuckets-1 || true
+          echo "MINIO_USER=${{ secrets.MINIO_USER }}" >> .env
+          echo "MINIO_PASSWORD=${{ secrets.MINIO_PASSWORD }}" >> .env
 
-      - name: Build and Run App
+      - name: Run Pipeline via Docker Compose
         run: |
-          export MINIO_USER=${{ secrets.MINIO_USER }}
-          export MINIO_PASSWORD=${{ secrets.MINIO_PASSWORD }}
-          
-          docker-compose up --build --exit-code-from app app
+          docker-compose up --build --exit-code-from app
+
+      - name: Cleanup
+        if: always()
+        run: docker-compose down -v
