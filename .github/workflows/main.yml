@@ -15,8 +15,8 @@ jobs:
 
       - name: Run Pipeline via Docker Compose
         run: |
-          docker-compose up --build --exit-code-from app
+          docker compose up --build --exit-code-from app
 
       - name: Cleanup
         if: always()
-        run: docker-compose down -v
+        run: docker compose down -v
