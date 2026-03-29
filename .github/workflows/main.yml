@@ -5,15 +5,16 @@ on: [push]
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
+    env:
+      MINIO_USER: ${{ secrets.MINIO_USER }}
+      MINIO_PASSWORD: ${{ secrets.MINIO_PASSWORD }}
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Run Pipeline via Docker Compose
-        env:
-          MINIO_USER: ${{ secrets.MINIO_USER }}
-          MINIO_PASSWORD: ${{ secrets.MINIO_PASSWORD }}
         run: |
-            docker compose up --build --exit-code-from app
+          docker compose up --build --exit-code-from app
 
       - name: Cleanup
         if: always()
