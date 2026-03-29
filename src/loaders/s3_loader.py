@@ -1,4 +1,5 @@
 import boto3
+from botocore.config import Config
 import json
 import os
 from src.loaders.base import BaseLoader
@@ -20,11 +21,18 @@ class S3Loader(BaseLoader):
         self.access_key = access_key or os.getenv("S3_ACCESS_KEY")
         self.secret_key = secret_key or os.getenv("S3_SECRET_KEY")
 
+        boto_config = Config(
+            signature_version='s3v4',
+            s3={'addressing_style': 'path'}
+        )
+
         self.s3 = boto3.resource(
             "s3",
             endpoint_url=self.endpoint_url,
             aws_access_key_id=self.access_key,
             aws_secret_access_key=self.secret_key,
+            config=boto_config,        # ← DODANE
+            region_name='us-east-1',   # ← DODANE
         )
 
         self.client = self.s3.meta.client
