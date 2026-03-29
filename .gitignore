@@ -8,7 +8,6 @@ data/
 logs/
 *.csv
 *.json
-!config/config.yaml  # Wyjątek dla bazowego schematu konfiguracyjnego
 repomix-output.xml
 .repomixignore
 

@@ -284,4 +284,3 @@ s3://gold/
 - API keys: CoinGecko (free tier), NBP (no key required), Yahoo Finance (no key required)
 
 See `.env.example` for all required environment variables.
->>>>>>> development
