@@ -2,6 +2,7 @@
 .env
 *.pem
 secrets/
+.secrets
 
 # --- DANE I LOGI (Single Source of Truth to API, nie lokalny dysk) ---
 data/
