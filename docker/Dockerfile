@@ -13,6 +13,7 @@ WORKDIR /app
 COPY --from=builder /usr/local /usr/local
 
 COPY src/ ./src
+COPY config/ ./config
 COPY main.py .
 COPY dashboard/ ./dashboard
 COPY run.sh /app/run.sh
