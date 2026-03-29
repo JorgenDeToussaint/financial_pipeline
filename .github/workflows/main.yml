@@ -10,8 +10,8 @@ jobs:
 
       - name: Run Pipeline via Docker Compose
         env:
-          MINIO_USER: ${{ secrets.MINIO_ROOT_USER }}
-          MINIO_PASSWORD: ${{ secrets.MINIO_ROOT_PASSWORD }}
+          MINIO_USER: ${{ secrets.MINIO_USER }}
+          MINIO_PASSWORD: ${{ secrets.MINIO_PASSWORD }}
         run: |
             docker compose up --build --exit-code-from app
 
