@@ -1,20 +1,14 @@
 #!/bin/bash
-set -e  # Przerwij, jeśli któryś krok wywali błąd
+set -e
 
 echo "🌊 Financial Lakehouse Pipeline: START"
 echo "======================================"
 
-# 1. Uruchomienie głównej rury (Bronze -> Silver)
-echo "📥 Ingesting data (Bronze/Silver)..."
-python main.py --pipe all
-
-# 2. Uruchomienie nowej warstwy Gold (AaaS)
-echo "💎 Refining data (Gold)..."
-python main.py --gold valuation
+python main.py
 
 echo "✅ Pipeline finished successfully!"
 
-# 3. Utrzymanie kontenera przy życiu
-# To ważne, żeby kontener nie zgasł po zakończeniu skryptu
-echo "📡 Keeping container alive for logs and debug..."
-tail -f /dev/null
+if [ "$TESTING" != "true" ]; then
+    echo "📡 Development mode: Keeping container alive..."
+    tail -f /dev/null
+fi
