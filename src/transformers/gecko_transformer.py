@@ -36,16 +36,6 @@ class GeckoTransformer(BaseTransformer):
                         pl.col("last_updated"),
                     ]
                 )
-                .with_columns(
-                    [
-                        pl.col("last_updated")
-                        .str.to_datetime(time_zone="UTC")
-                        .alias("datetime"),
-                        pl.col("price_usd").cast(pl.Float64),
-                        pl.col("market_cap").cast(pl.Float64),
-                        pl.col("total_volume").cast(pl.Float64),
-                    ]
-                )
                 .drop("last_updated")
             )
 

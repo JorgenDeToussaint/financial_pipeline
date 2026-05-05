@@ -3,7 +3,8 @@ import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-def get_logger(name: str):
+
+def get_logger(name: str, log_file: str = "pipeline.log", level=logging.DEBUG):
     log_dir = Path("logs")
     log_dir.mkdir(exist_ok=True)
 
@@ -12,11 +13,11 @@ def get_logger(name: str):
     if logger.hasHandlers():
         return logger
 
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(level)
 
     formatter = logging.Formatter(
-        "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
+        fmt="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
     )
 
     console_handler = logging.StreamHandler(sys.stdout)
@@ -24,10 +25,10 @@ def get_logger(name: str):
     console_handler.setFormatter(formatter)
 
     file_handler = RotatingFileHandler(
-        log_dir / "pipeline.log",
-        maxBytes=5 * 1024 * 1024,
+        log_dir / log_file,
+        maxBytes=5 * 1024 * 1024,  # 5MB
         backupCount=3,
-        encoding="utf-8",
+        encoding='utf-8'
     )
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)
